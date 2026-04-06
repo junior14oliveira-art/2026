@@ -4,14 +4,50 @@
 
 :start
 menu PXEGEMINI - Network Boot
+item ActivePasswordChanger5 ActivePasswordChanger5.iso [unknown]
+item VCR35R VCR35R.iso [unknown]
 item WinPEBasicEnhanced WinPEBasicEnhanced.iso [uefi]
+item hdat2 hdat2.iso [unknown]
+item hdsdos hdsdos.iso [unknown]
 item strelec strelec [wimboot]
 item exit Reboot
 choose target && goto ${target}
 
+:ActivePasswordChanger5
+# Unknown type: ActivePasswordChanger5.iso (tentando boot via chainload)
+chain http://192.168.0.21/ActivePasswordChanger5/bootx64.efi || goto ActivePasswordChanger5_fail
+goto exit
+:ActivePasswordChanger5_fail
+echo Falha ao bootar ActivePasswordChanger5.iso. Tipo nao reconhecido.
+goto start
+
+:VCR35R
+# Unknown type: VCR35R.iso (tentando boot via chainload)
+chain http://192.168.0.21/VCR35R/bootx64.efi || goto VCR35R_fail
+goto exit
+:VCR35R_fail
+echo Falha ao bootar VCR35R.iso. Tipo nao reconhecido.
+goto start
+
 :WinPEBasicEnhanced
 # Boot UEFI: WinPEBasicEnhanced.iso
 chain http://192.168.0.21/WinPEBasicEnhanced/bootx64.efi
+
+:hdat2
+# Unknown type: hdat2.iso (tentando boot via chainload)
+chain http://192.168.0.21/hdat2/bootx64.efi || goto hdat2_fail
+goto exit
+:hdat2_fail
+echo Falha ao bootar hdat2.iso. Tipo nao reconhecido.
+goto start
+
+:hdsdos
+# Unknown type: hdsdos.iso (tentando boot via chainload)
+chain http://192.168.0.21/hdsdos/bootx64.efi || goto hdsdos_fail
+goto exit
+:hdsdos_fail
+echo Falha ao bootar hdsdos.iso. Tipo nao reconhecido.
+goto start
 
 :strelec
 # Boot WinPE: strelec
@@ -32,7 +68,10 @@ initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
 initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
 initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
 initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/strelec/startnet.cmd startnet.cmd
+initrd http://192.168.0.21/strelec/startnet.cmd Windows/System32/startnet.cmd
 initrd http://192.168.0.21/strelec/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
+initrd http://192.168.0.21/strelec/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
 boot
 
 

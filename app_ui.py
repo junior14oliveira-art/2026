@@ -538,30 +538,31 @@ class PXEGEMINIApp(ctk.CTk):
             self.after(0, self.stop_engine)
             return
 
-        # Create SMB share "SSTR" so WinPE guests can access programs via \\SSTR\
-        # Strelec expects SSTR share to point directly to the SSTR folder (not its parent)
-        # so \\SSTR\MInst\MInst.exe resolves correctly
+        # Create SMB shares so WinPE guests can access:
+        # 1. \\SSTR\ -> programs (Strelec tools, MInst, etc)
+        # 2. \\IMG\   -> user's Macrium backup images
         extract_base = self.config.get("extract_dir", os.path.join("data", "extracted"))
         sstr_path = os.path.abspath(os.path.join(extract_base, "strelec", "SSTR"))
-        # fallbacks
+        # fallbacks for sstr_path
         if not os.path.isdir(sstr_path):
             sstr_path = os.path.abspath(os.path.join("data", "extracted", "strelec", "SSTR"))
         if not os.path.isdir(sstr_path):
             sstr_path = os.path.abspath("E:\\PXEGEMINI\\data\\extracted\\strelec\\SSTR")
-        if os.path.isdir(sstr_path):
-            subprocess.run(["net", "share", "/delete", "SSTR"], capture_output=True)
-            result = subprocess.run(
-                ["net", "share", "SSTR=" + os.path.normpath(sstr_path)],
-                capture_output=True, text=True
-            )
-            if result.returncode == 0:
-                logging.info(f"SMB Share SSTR criado: {sstr_path}")
-            else:
-                logging.warning(f"Falha ao criar SMB share SSTR: {result.stderr.strip() or result.stdout.strip()}")
-        else:
-            logging.warning(f"SSTR folder not found: {sstr_path}")
 
-        # Update UI — online
+        for share_name, share_path in [("SSTR", sstr_path), ("IMG", r"E:\Backup")]:
+            subprocess.run(["net", "share", f"/delete", share_name], capture_output=True)
+            if os.path.isdir(share_path):
+                result = subprocess.run(
+                    ["net", "share", f"{share_name}={os.path.normpath(share_path)}"],
+                    capture_output=True, text=True
+                )
+                if result.returncode == 0:
+                    logging.info(f"SMB Share {share_name} criado: {share_path}")
+                else:
+                    logging.warning(f"Falha ao criar SMB share {share_name}: "
+                                    f"{result.stderr.strip() or result.stdout.strip()}")
+            else:
+                logging.info(f"Pasta para share {share_name} nao encontrada: {share_path} (pulando)")
         mode_text = "ProxyDHCP" if config["mode_proxy"] else "DHCP"
         self.after(0, lambda: self.card_dhcp.set_online(mode_text))
         self.after(0, lambda: self.card_tftp.set_online("Porta 69"))
@@ -581,6 +582,10 @@ class PXEGEMINIApp(ctk.CTk):
         self.running = False
         logging.info("Parando servidores...")
 
+        # Remove SMB shares
+        for share_name in ["SSTR", "IMG"]:
+            subprocess.run(["net", "share", f"/delete", share_name], capture_output=True)
+
         # Set running=False flag on each server
         for key in ("dhcp", "tftp"):
             srv = self.servers.get(key)
@@ -594,8 +599,7 @@ class PXEGEMINIApp(ctk.CTk):
             except Exception:
                 pass
 
-        # Remove SMB share
-        subprocess.run(["net", "share", "/delete", "SSTR"], capture_output=True)
+
 
         # Close sockets to break select() loops in DHCP/TFTP
         for key in ("dhcp", "tftp"):
