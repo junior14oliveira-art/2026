@@ -4,11 +4,13 @@
 
 :start
 menu PXEGEMINI - Network Boot (UEFI)
+set menu-timeout 5000
+set submenu-timeout 0
 
 item strelec Strelec WinPE [wimboot]
 item exit Reboot
 
-choose target && goto ${target}
+choose --default strelec --timeout 5000 target && goto ${target} || goto strelec
 
 :strelec
 # Boot WinPE: Strelec WinPE
