@@ -431,27 +431,67 @@ class ISOManager:
 
     # ===================== MENU GENERATION =====================
 
+    # Arquivos essenciais por tipo
+    _TYPE_FILES = {
+        TYPE_WIMBOOT: ["boot.wim", "bootx64.efi"],
+        TYPE_LINUX_ISO: ["vmlinuz"],
+        TYPE_LINUX_SQUASHFS: ["vmlinuz"],
+        TYPE_UEFI_DIRECT: ["bootx64.efi"],
+    }
+
     def list_added_isos(self):
-        """Lista todas as ISOs ja adicionadas lendo os markers."""
+        """Lista todas as ISOs validas ja adicionadas."""
         isos = []
         if not os.path.isdir(self.extract_dir):
             return isos
 
+        # First pass: apenas le os .pxegemini_meta (rapido, nao escaneia disco)
+        valid_keys = set()
         for entry in sorted(os.listdir(self.extract_dir)):
-            folder = os.path.join(self.extract_dir, entry)
-            metadata = os.path.join(folder, ".pxegemini_meta")
+            if entry.startswith("."):
+                continue
+            metadata = os.path.join(self.extract_dir, entry, ".pxegemini_meta")
             if os.path.isfile(metadata):
-                info = {"key": entry, "folder": folder}
+                info = {"key": entry, "folder": os.path.join(self.extract_dir, entry)}
                 with open(metadata, "r", encoding="utf-8") as f:
                     for line in f:
                         if "=" in line:
                             k, v = line.strip().split("=", 1)
                             info[k] = v
                 isos.append(info)
-            elif os.path.isdir(folder) and not entry.startswith("."):
-                # Pasta antiga sem meta - tenta deduzir
-                isos.append({"key": entry, "name": entry, "type": "legacy", "folder": folder})
+                valid_keys.add(entry)
+
+        # Second pass: pastas antigas sem meta — verifica se tem arquivos de boot
+        # So olha arquivos especificos, nao faz listagem completa (evita travamento)
+        for entry in sorted(os.listdir(self.extract_dir)):
+            if entry.startswith(".") or entry in valid_keys:
+                continue
+            folder = os.path.join(self.extract_dir, entry)
+            if not os.path.isdir(folder):
+                continue
+            detected_type = self._detect_folder_type(folder)
+            if detected_type == "invalid":
+                # Pasta sem arquivos de boot — ignorar
+                continue
+            with open(os.path.join(folder, ".pxegemini_meta"), "w", encoding="utf-8") as f:
+                f.write(f"name={entry}\npath=\nkey={entry}\ntype={detected_type}\n")
+            isos.append({"key": entry, "name": entry, "type": detected_type, "folder": folder})
+            valid_keys.add(entry)
+
         return isos
+
+    def _detect_folder_type(self, folder):
+        """Detecta tipo olhando apenas arquivos essenciais (rapido)."""
+        if os.path.isfile(os.path.join(folder, "boot.wim")) and os.path.isfile(os.path.join(folder, "bootx64.efi")):
+            return self.TYPE_WIMBOOT
+        if os.path.isfile(os.path.join(folder, "boot.wim")):
+            return self.TYPE_WIMBOOT
+        if os.path.isfile(os.path.join(folder, "vmlinuz")):
+            return self.TYPE_LINUX_ISO
+        if os.path.isfile(os.path.join(folder, "bootx64.efi")):
+            return self.TYPE_UEFI_DIRECT
+        # Sem arquivos essenciais = pasta invalida
+        return "invalid"
 
     def remove_iso(self, key):
         """Remove uma ISO adicionada."""
@@ -469,7 +509,8 @@ class ISOManager:
     def generate_menu(self):
         """Gera menu.ipxe dinamico com todas as ISOs adicionadas."""
         server_ip = self.config.get("server_ip", "192.168.0.21")
-        base_url = f"http://{server_ip}/extracted"
+        # HTTPD root ja e extract_dir, entao nao precisa prefixo "/extracted"
+        base_url = f"http://{server_ip}"
         boot_url = f"http://{server_ip}"
 
         isos = self.list_added_isos()

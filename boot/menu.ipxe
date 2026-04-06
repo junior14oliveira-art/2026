@@ -1,49 +1,34 @@
 #!ipxe
-# === CLONE EXATO DO ANITGO SERVIDOR (4MC-PXE-SERVER) ===
+# PXEGEMINI Boot Menu - Generated dynamically
+# Server: 192.168.0.21
 
-echo Iniciando Sergei Strelec WinPE 11 x64 (Modo Compatibilidade Estrita Total)
-set base http://192.168.0.21/strelec
+:start
+menu PXEGEMINI - Network Boot
+item strelec strelec [wimboot]
+item exit Reboot
+choose target && goto ${target}
 
-kernel ${base}/wimboot rawbcd
-initrd ${base}/bootmgr bootmgr
-initrd ${base}/bootmgr bootmgr.efi
-initrd ${base}/bootx64.efi bootmgfw.efi
-initrd ${base}/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
-initrd ${base}/bootx64.efi \EFI\Microsoft\Boot\bootmgfw.efi
-initrd ${base}/bootx64.efi bootx64.efi
-initrd ${base}/bootx64.efi EFI/BOOT/BOOTX64.EFI
-initrd ${base}/BCD BCD
-initrd ${base}/boot.sdi boot.sdi
-initrd ${base}/boot.sdi boot/boot.sdi
-initrd ${base}/boot.sdi SSTR/boot.sdi
-initrd ${base}/boot.sdi \boot\boot.sdi
-initrd ${base}/boot.sdi \SSTR\boot.sdi
-initrd ${base}/boot.wim boot.wim
-initrd ${base}/boot.wim sources/boot.wim
-initrd ${base}/boot.wim SSTR/strelec11x64Eng.wim
-initrd ${base}/boot.wim \sources\boot.wim
-initrd ${base}/boot.wim \SSTR\strelec11x64Eng.wim
-
-initrd ${base}/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
-initrd ${base}/Fonts/segmono_boot.ttf SSTR/Fonts/segmono_boot.ttf
-initrd ${base}/Fonts/segmono_boot.ttf \SSTR\Fonts\segmono_boot.ttf
-initrd ${base}/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
-initrd ${base}/Fonts/segmono_boot.ttf \EFI\Microsoft\Boot\Fonts\segmono_boot.ttf
-initrd ${base}/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
-initrd ${base}/Fonts/segoe_slboot.ttf SSTR/Fonts/segoe_slboot.ttf
-initrd ${base}/Fonts/segoe_slboot.ttf \SSTR\Fonts\segoe_slboot.ttf
-initrd ${base}/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
-initrd ${base}/Fonts/segoe_slboot.ttf \EFI\Microsoft\Boot\Fonts\segoe_slboot.ttf
-initrd ${base}/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
-initrd ${base}/Fonts/wgl4_boot.ttf SSTR/Fonts/wgl4_boot.ttf
-initrd ${base}/Fonts/wgl4_boot.ttf \SSTR\Fonts\wgl4_boot.ttf
-initrd ${base}/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
-initrd ${base}/Fonts/wgl4_boot.ttf \EFI\Microsoft\Boot\Fonts\wgl4_boot.ttf
-
-# =======================================================================
-# A SOLUCAO PARA O MACRIUM NÃO ABRIR: Mapeando a REDE pelo PATH do Sistema
-# Ao injetar no System32, basta abrir o Executar (Win+R) e digitar o nome.
-# =======================================================================
-initrd ${base}/Mapear_Programas.bat \Windows\System32\1_CONECTAR.bat
-
+:strelec
+# Boot WinPE: strelec
+kernel http://192.168.0.21/strelec/wimboot rawbcd
+initrd http://192.168.0.21/strelec/bootmgr bootmgr
+initrd http://192.168.0.21/strelec/bootmgr bootmgr.efi
+initrd http://192.168.0.21/strelec/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21/strelec/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21/strelec/BCD BCD
+initrd http://192.168.0.21/strelec/BCD boot/BCD
+initrd http://192.168.0.21/strelec/boot.sdi boot.sdi
+initrd http://192.168.0.21/strelec/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21/strelec/boot.wim boot.wim
+initrd http://192.168.0.21/strelec/boot.wim sources/boot.wim
+initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
 boot
+
+
+:exit
+reboot

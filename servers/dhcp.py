@@ -119,18 +119,17 @@ class DHCPD:
     def _boot_file_for(self, mac: str, options: Dict[int, list], is_ipxe: bool) -> str:
         if is_ipxe:
             return 'menu.ipxe'
-        
-        # Heurística para Dell/Lenovo (Nielsen Compliance: Visibility of System Status)
+
         arch = self._arch(options)
-        
-        # Arch 0 = BIOS (Legacy)
-        # Arch 6, 7, 9, 11 = UEFI
-        if arch in ['6', '7', '9', '11']:
-            # snponly.efi usa o driver da placa-mãe (SNP) - Mais estável em placas novas
+
+        # Prioridade UEFI: snponly.efi usa driver nativo da placa-mae
+        # Funciona no Dell 5420 e Lenovo (UEFI only, sem legacy)
+        if arch in ['6', '7', '9', '11'] or arch is None:
+            # Arch None = cliente nao reportou architektura, usa snponly.efi como fallback
             return 'snponly.efi'
-        
-        # Para BIOS antigos usamos o undionly
-        return 'undionly.kpxe'
+
+        # BIOS legacy
+        return 'ipxe.efi'
 
     def _build_packet(self, request: bytes, message_type: int, lease_ip: str, boot_file: str, include_pxe_vendor: bool) -> bytes:
         packet = bytearray(300)
@@ -205,7 +204,10 @@ class DHCPD:
                 if self.mode_proxy and self.sock_binl:
                     sockets.append(self.sock_binl)
                     
-                readable, _, _ = select.select(sockets, [], [], 0.5)
+                try:
+                    readable, _, _ = select.select(sockets, [], [], 0.5)
+                except (OSError, ValueError):
+                    break
                 
                 for s in readable:
                     try:
