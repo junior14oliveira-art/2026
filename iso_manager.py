@@ -608,6 +608,10 @@ initrd {iso_url}/boot.wim sources/boot.wim"""
             entry += f"\ninitrd {iso_url}/Fonts/{font} Fonts/{font}"
             entry += f"\ninitrd {iso_url}/Fonts/{font} EFI/Microsoft/Boot/Fonts/{font}"
 
+        # CAMINHO_IMG_REDE bat available as X:\ in WinPE
+        bat_path = f"{iso_url}/SSTR/CAMINHO_IMG_REDE.bat"
+        entry += f"\ninitrd {bat_path} CAMINHO_IMG_REDE.bat"
+
         entry += "\nboot\n"
         return entry
 

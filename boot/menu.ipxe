@@ -4,9 +4,14 @@
 
 :start
 menu PXEGEMINI - Network Boot
+item WinPEBasicEnhanced WinPEBasicEnhanced.iso [uefi]
 item strelec strelec [wimboot]
 item exit Reboot
 choose target && goto ${target}
+
+:WinPEBasicEnhanced
+# Boot UEFI: WinPEBasicEnhanced.iso
+chain http://192.168.0.21/WinPEBasicEnhanced/bootx64.efi
 
 :strelec
 # Boot WinPE: strelec
@@ -27,6 +32,7 @@ initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
 initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
 initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
 initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/strelec/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
 boot
 
 

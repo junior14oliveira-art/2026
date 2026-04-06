@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import threading
 import logging
+import subprocess
 import time
 import os
 import psutil
@@ -537,6 +538,29 @@ class PXEGEMINIApp(ctk.CTk):
             self.after(0, self.stop_engine)
             return
 
+        # Create SMB share "SSTR" so WinPE guests can access programs via \\SSTR\
+        # Strelec expects SSTR share to point directly to the SSTR folder (not its parent)
+        # so \\SSTR\MInst\MInst.exe resolves correctly
+        extract_base = self.config.get("extract_dir", os.path.join("data", "extracted"))
+        sstr_path = os.path.abspath(os.path.join(extract_base, "strelec", "SSTR"))
+        # fallbacks
+        if not os.path.isdir(sstr_path):
+            sstr_path = os.path.abspath(os.path.join("data", "extracted", "strelec", "SSTR"))
+        if not os.path.isdir(sstr_path):
+            sstr_path = os.path.abspath("E:\\PXEGEMINI\\data\\extracted\\strelec\\SSTR")
+        if os.path.isdir(sstr_path):
+            subprocess.run(["net", "share", "/delete", "SSTR"], capture_output=True)
+            result = subprocess.run(
+                ["net", "share", "SSTR=" + os.path.normpath(sstr_path)],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                logging.info(f"SMB Share SSTR criado: {sstr_path}")
+            else:
+                logging.warning(f"Falha ao criar SMB share SSTR: {result.stderr.strip() or result.stdout.strip()}")
+        else:
+            logging.warning(f"SSTR folder not found: {sstr_path}")
+
         # Update UI — online
         mode_text = "ProxyDHCP" if config["mode_proxy"] else "DHCP"
         self.after(0, lambda: self.card_dhcp.set_online(mode_text))
@@ -569,6 +593,9 @@ class PXEGEMINIApp(ctk.CTk):
                 http_srv.stop()
             except Exception:
                 pass
+
+        # Remove SMB share
+        subprocess.run(["net", "share", "/delete", "SSTR"], capture_output=True)
 
         # Close sockets to break select() loops in DHCP/TFTP
         for key in ("dhcp", "tftp"):
