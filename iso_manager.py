@@ -96,8 +96,20 @@ class ISOManager:
         """Analisa arquivos da ISO montada para determinar o tipo."""
         lower_map = {x.lower(): x for x in contents}
 
-        # WinPE: tem .wim
+        # WinPE: procura .wim recursivamente (pode estar em sources/boot.wim)
         wim_files = [f for f in contents if f.lower().endswith(".wim")]
+        if not wim_files:
+            # Busca recursiva por .wim (para ISOs que escondem em subdiretorios)
+            try:
+                for root, dirs, files in os.walk(drive):
+                    for f in files:
+                        if f.lower().endswith(".wim"):
+                            wim_files = [f]
+                            break
+                    if wim_files:
+                        break
+            except OSError:
+                pass
         if wim_files:
             return self.TYPE_WIMBOOT
 

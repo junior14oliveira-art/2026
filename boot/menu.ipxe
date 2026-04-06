@@ -3,17 +3,67 @@
 # Server: 192.168.0.21
 
 :start
-menu PXEGEMINI - Network Boot (UEFI)
-set menu-timeout 5000
-set submenu-timeout 0
-
-item strelec Strelec WinPE [wimboot]
+menu PXEGEMINI - Network Boot
+item Ghost Ghost.iso [unknown]
+item HDDREG HDDREG.iso [unknown]
+item STRELECLDELL STRELECLDELL.iso [wimboot]
+item WinPEBasicEnhanced WinPEBasicEnhanced.iso [uefi]
+item Windows_11 Windows 11.iso [uefi]
+item strelec strelec [wimboot]
 item exit Reboot
+choose target && goto ${target}
 
-choose --default strelec --timeout 5000 target && goto ${target} || goto strelec
+:Ghost
+# Unknown type: Ghost.iso (tentando boot via chainload)
+chain http://192.168.0.21/Ghost/bootx64.efi || goto Ghost_fail
+goto exit
+:Ghost_fail
+echo Falha ao bootar Ghost.iso. Tipo nao reconhecido.
+goto start
+
+:HDDREG
+# Unknown type: HDDREG.iso (tentando boot via chainload)
+chain http://192.168.0.21/HDDREG/bootx64.efi || goto HDDREG_fail
+goto exit
+:HDDREG_fail
+echo Falha ao bootar HDDREG.iso. Tipo nao reconhecido.
+goto start
+
+:STRELECLDELL
+# Boot WinPE: STRELECLDELL.iso
+kernel http://192.168.0.21/STRELECLDELL/wimboot rawbcd
+initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr
+initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr.efi
+initrd http://192.168.0.21/STRELECLDELL/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21/STRELECLDELL/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21/STRELECLDELL/BCD BCD
+initrd http://192.168.0.21/STRELECLDELL/BCD boot/BCD
+initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot.sdi
+initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21/STRELECLDELL/boot.wim boot.wim
+initrd http://192.168.0.21/STRELECLDELL/boot.wim sources/boot.wim
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/startnet.cmd startnet.cmd
+initrd http://192.168.0.21/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/STRELECLDELL/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
+initrd http://192.168.0.21/STRELECLDELL/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
+boot
+
+:WinPEBasicEnhanced
+# Boot UEFI: WinPEBasicEnhanced.iso
+chain http://192.168.0.21/WinPEBasicEnhanced/bootx64.efi
+
+:Windows_11
+# Boot UEFI: Windows 11.iso
+chain http://192.168.0.21/Windows_11/bootx64.efi
 
 :strelec
-# Boot WinPE: Strelec WinPE
+# Boot WinPE: strelec
 kernel http://192.168.0.21/strelec/wimboot rawbcd
 initrd http://192.168.0.21/strelec/bootmgr bootmgr
 initrd http://192.168.0.21/strelec/bootmgr bootmgr.efi
@@ -36,6 +86,7 @@ initrd http://192.168.0.21/strelec/startnet.cmd Windows/System32/startnet.cmd
 initrd http://192.168.0.21/strelec/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
 initrd http://192.168.0.21/strelec/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
 boot
+
 
 :exit
 reboot
