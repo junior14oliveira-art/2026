@@ -105,6 +105,9 @@ class PXEGEMINIApp(ctk.CTk):
         self.bind("<Escape>", lambda e: self.stop_engine())
         self.bind("<Control-r>", lambda e: self._refresh_iso_list())
 
+        # Auto-start engine after UI is drawn
+        self.after(300, self.start_engine)
+
     def setup_ui(self):
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -460,31 +463,65 @@ class PXEGEMINIApp(ctk.CTk):
     # ===================== ENGINE =====================
 
     def start_engine(self):
-        if not self.check_readiness():
-            # Heuristic: Help users recover from errors
-            logging.warning("Sistema nao esta pronto. Verifique os itens acima antes de iniciar.")
+        """Inicia o engine em thread separada para nunca travar a GUI."""
+        threading.Thread(target=self._start_work, daemon=True).start()
+
+    def _start_work(self):
+        """Thread de trabalho — nunca bloqueia o mainloop."""
+        # Quick readiness check on main thread
+        ready = True
+        errors = []
+        import ctypes
+        if not ctypes.windll.shell32.IsUserAnAdmin():
+            errors.append("Precisa de admin")
+            ready = False
+
+        # Only bind-check port 80 (most likely to conflict)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(('', 80))
+            except Exception:
+                errors.append("Porta 80 ocupada")
+                ready = False
+
+        if not errors:
+            for port in [67, 69, 4011]:
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    try:
+                        s.bind(('', port))
+                    except Exception:
+                        errors.append(f"Porta {port} ocupada")
+                        ready = False
+
+        # Update readiness on main thread
+        if errors:
+            self.after(0, lambda: self.readiness_label.configure(
+                text=f"  ATENCAO: {' | '.join(errors)}", text_color=COLORS["red"]))
+            self.after(0, lambda: logging.warning(
+                "Sistema nao esta pronto. Verifique os itens acima."))
             return
+        else:
+            self.after(0, lambda: self.readiness_label.configure(
+                text="  Sistema pronto.", text_color=COLORS["green"]))
 
-        self.running = True
-        self.start_btn.configure(state="disabled")
-        self.stop_btn.configure(state="normal")
+        # Update UI — "spinning up"
+        self.after(0, lambda: self.card_dhcp.set_offline())
+        self.after(0, lambda: self.card_tftp.set_offline())
+        self.after(0, lambda: self.card_http.set_offline())
+        self.after(0, lambda: self.start_btn.configure(state="disabled"))
 
-        # Update status LED
-        self.status_led.configure(text_color=COLORS["green"])
-        self.status_text.configure(text="ONLINE")
+        # Generate menu
+        self.iso_manager.generate_menu()
 
         config = self.config.copy()
         server_ip = self.entry_ip.get()
         if not server_ip or not is_valid_ip(server_ip):
-            logging.error(f"IP do servidor invalido: {server_ip}")
-            self.stop_engine()
+            self.after(0, lambda: logging.error(f"IP invalido: {server_ip}"))
+            self.after(0, self.stop_engine)
             return
 
         config["server_ip"] = server_ip
         config["mode_proxy"] = self.proxy_var.get()
-
-        # Regenera menu
-        threading.Thread(target=self.iso_manager.generate_menu, daemon=True).start()
 
         try:
             self.servers["dhcp"] = DHCPD(config)
@@ -495,16 +532,24 @@ class PXEGEMINIApp(ctk.CTk):
             threading.Thread(target=self.servers["tftp"].listen, daemon=True).start()
             threading.Thread(target=self.servers["http"].listen, daemon=True).start()
 
-            # Heuristic: Visibility of system status — update cards
-            self.card_dhcp.set_online("ProxyDHCP" if config["mode_proxy"] else "DHCP")
-            self.card_tftp.set_online("Porta 69")
-            self.card_http.set_online(config["server_ip"])
-
-            logging.info("PXEGEMINI Engine Iniciado.")
-            logging.info(f"Modo: {'ProxyDHCP' if config['mode_proxy'] else 'DHCP'} | UEFI: snponly.efi")
         except Exception as e:
-            logging.error(f"Falha ao iniciar: {e}")
-            self.stop_engine()
+            logging.error(f"Falha ao iniciar servidores: {e}")
+            self.after(0, self.stop_engine)
+            return
+
+        # Update UI — online
+        mode_text = "ProxyDHCP" if config["mode_proxy"] else "DHCP"
+        self.after(0, lambda: self.card_dhcp.set_online(mode_text))
+        self.after(0, lambda: self.card_tftp.set_online("Porta 69"))
+        self.after(0, lambda: self.card_http.set_online(config["server_ip"]))
+        self.after(0, lambda: self.status_led.configure(text_color=COLORS["green"]))
+        self.after(0, lambda: self.status_text.configure(text="ONLINE"))
+        self.after(0, lambda: self.stop_btn.configure(state="normal"))
+        self.after(0, lambda: logging.info("PXEGEMINI Engine Iniciado."))
+        self.after(0, lambda: logging.info(
+            f"Modo: {mode_text} | UEFI: snponly.efi"))
+
+        self.running = True
 
     def stop_engine(self):
         if not self.running:
