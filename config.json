@@ -1,0 +1,15 @@
+{
+    "server_ip": "192.168.0.21",
+    "http_port": 80,
+    "tftp_port": 69,
+    "dhcp_port": 67,
+    "iso_dir": "E:\\\\",
+    "extract_dir": "E:\\PXEGEMINI\\data\\extracted",
+    "boot_dir": "E:\\PXEGEMINI\\boot",
+    "mode_proxy": false,
+    "pool_begin": "192.168.0.200",
+    "pool_end": "192.168.0.250",
+    "subnet_mask": "255.255.255.0",
+    "gateway": "192.168.0.1",
+    "dns_server": "8.8.8.8"
+}

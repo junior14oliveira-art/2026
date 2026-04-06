@@ -1,0 +1,49 @@
+#!ipxe
+# === CLONE EXATO DO ANITGO SERVIDOR (4MC-PXE-SERVER) ===
+
+echo Iniciando Sergei Strelec WinPE 11 x64 (Modo Compatibilidade Estrita Total)
+set base http://192.168.0.21/strelec
+
+kernel ${base}/wimboot rawbcd
+initrd ${base}/bootmgr bootmgr
+initrd ${base}/bootmgr bootmgr.efi
+initrd ${base}/bootx64.efi bootmgfw.efi
+initrd ${base}/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd ${base}/bootx64.efi \EFI\Microsoft\Boot\bootmgfw.efi
+initrd ${base}/bootx64.efi bootx64.efi
+initrd ${base}/bootx64.efi EFI/BOOT/BOOTX64.EFI
+initrd ${base}/BCD BCD
+initrd ${base}/boot.sdi boot.sdi
+initrd ${base}/boot.sdi boot/boot.sdi
+initrd ${base}/boot.sdi SSTR/boot.sdi
+initrd ${base}/boot.sdi \boot\boot.sdi
+initrd ${base}/boot.sdi \SSTR\boot.sdi
+initrd ${base}/boot.wim boot.wim
+initrd ${base}/boot.wim sources/boot.wim
+initrd ${base}/boot.wim SSTR/strelec11x64Eng.wim
+initrd ${base}/boot.wim \sources\boot.wim
+initrd ${base}/boot.wim \SSTR\strelec11x64Eng.wim
+
+initrd ${base}/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd ${base}/Fonts/segmono_boot.ttf SSTR/Fonts/segmono_boot.ttf
+initrd ${base}/Fonts/segmono_boot.ttf \SSTR\Fonts\segmono_boot.ttf
+initrd ${base}/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd ${base}/Fonts/segmono_boot.ttf \EFI\Microsoft\Boot\Fonts\segmono_boot.ttf
+initrd ${base}/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd ${base}/Fonts/segoe_slboot.ttf SSTR/Fonts/segoe_slboot.ttf
+initrd ${base}/Fonts/segoe_slboot.ttf \SSTR\Fonts\segoe_slboot.ttf
+initrd ${base}/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd ${base}/Fonts/segoe_slboot.ttf \EFI\Microsoft\Boot\Fonts\segoe_slboot.ttf
+initrd ${base}/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd ${base}/Fonts/wgl4_boot.ttf SSTR/Fonts/wgl4_boot.ttf
+initrd ${base}/Fonts/wgl4_boot.ttf \SSTR\Fonts\wgl4_boot.ttf
+initrd ${base}/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd ${base}/Fonts/wgl4_boot.ttf \EFI\Microsoft\Boot\Fonts\wgl4_boot.ttf
+
+# =======================================================================
+# A SOLUCAO PARA O MACRIUM NÃO ABRIR: Mapeando a REDE pelo PATH do Sistema
+# Ao injetar no System32, basta abrir o Executar (Win+R) e digitar o nome.
+# =======================================================================
+initrd ${base}/Mapear_Programas.bat \Windows\System32\1_CONECTAR.bat
+
+boot

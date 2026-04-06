@@ -1,0 +1,36 @@
+# PXEGEMINI GitIgnore
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Repositorio do Strelec (Grande demais para GitHub)
+data/
+iso/
+*.iso
+*.wim
+*.sdi
+*.efi
+clean_BCD
+mod_BCD
+bcd_dump.txt
+bcd_dump_full.txt
+
+# Pasta de Build
+build/
+dist/
+*.spec
+build_log.txt
+
+# Outros
+.vscode/
+.idea/
+*.lnk
+http_results.txt
+test_bcd
+test_wim
+iso_diag.txt
