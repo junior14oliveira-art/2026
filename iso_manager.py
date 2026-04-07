@@ -620,6 +620,10 @@ initrd {iso_url}/boot.wim sources/boot.wim"""
             entry += f"\ninitrd {iso_url}/Fonts/{font} Fonts/{font}"
             entry += f"\ninitrd {iso_url}/Fonts/{font} EFI/Microsoft/Boot/Fonts/{font}"
 
+        # httpdisk driver + tool for ISO mount via HTTP (like iVentoy)
+        entry += f"\ninitrd {iso_url}/httpdisk.sys httpdisk.sys"
+        entry += f"\ninitrd {iso_url}/httpdisk.exe httpdisk.exe"
+
         # CAMINHO_IMG_REDE bat + desktop shortcut available in WinPE RAM disk
         entry += f"\ninitrd {iso_url}/startnet.cmd startnet.cmd"
         entry += f"\ninitrd {iso_url}/startnet.cmd Windows/System32/startnet.cmd"

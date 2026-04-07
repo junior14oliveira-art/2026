@@ -1,18 +1,53 @@
 #!ipxe
-# PXEGEMINI Boot Menu - GEMINIISO
+# PXEGEMINI Boot Menu - Generated dynamically
 # Server: 192.168.0.21
 
 :start
-menu PXEGEMINI - Network Boot (UEFI)
-set menu-timeout 5000
-set submenu-timeout 0
-
-item GEMINIISO GEMINIISO WinPE [wimboot]
+menu PXEGEMINI - Network Boot
+item STRELECLDELL STRELECLDELL [wimboot]
+item WinPEBasicEnhanced WinPEBasicEnhanced [uefi]
+item Windows_11 Windows_11 [uefi]
+item geminiiso geminiiso [wimboot]
 item exit Reboot
-choose --default GEMINIISO --timeout 5000 target && goto ${target} || goto GEMINIISO
+choose target && goto ${target}
 
-:GEMINIISO
-# Boot WinPE: GEMINIISO (Strelec)
+:STRELECLDELL
+# Boot WinPE: STRELECLDELL
+kernel http://192.168.0.21/STRELECLDELL/wimboot rawbcd
+initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr
+initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr.efi
+initrd http://192.168.0.21/STRELECLDELL/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21/STRELECLDELL/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21/STRELECLDELL/BCD BCD
+initrd http://192.168.0.21/STRELECLDELL/BCD boot/BCD
+initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot.sdi
+initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21/STRELECLDELL/boot.wim boot.wim
+initrd http://192.168.0.21/STRELECLDELL/boot.wim sources/boot.wim
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/STRELECLDELL/httpdisk.sys httpdisk.sys
+initrd http://192.168.0.21/STRELECLDELL/httpdisk.exe httpdisk.exe
+initrd http://192.168.0.21/STRELECLDELL/startnet.cmd startnet.cmd
+initrd http://192.168.0.21/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/STRELECLDELL/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
+initrd http://192.168.0.21/STRELECLDELL/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
+boot
+
+:WinPEBasicEnhanced
+# Boot UEFI: WinPEBasicEnhanced
+chain http://192.168.0.21/WinPEBasicEnhanced/bootx64.efi
+
+:Windows_11
+# Boot UEFI: Windows_11
+chain http://192.168.0.21/Windows_11/bootx64.efi
+
+:geminiiso
+# Boot WinPE: geminiiso
 kernel http://192.168.0.21/geminiiso/wimboot rawbcd
 initrd http://192.168.0.21/geminiiso/bootmgr bootmgr
 initrd http://192.168.0.21/geminiiso/bootmgr bootmgr.efi
@@ -37,6 +72,7 @@ initrd http://192.168.0.21/geminiiso/startnet.cmd Windows/System32/startnet.cmd
 initrd http://192.168.0.21/geminiiso/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
 initrd http://192.168.0.21/geminiiso/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
 boot
+
 
 :exit
 reboot

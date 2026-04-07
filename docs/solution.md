@@ -42,15 +42,27 @@ The original boot.wim doesn't contain `X:\SSTR\` directory.
 - Mount ISO via HTTP as virtual disk Y:
 - Access SSTR programs via Y:\SSTR\
 
-**Status:** Implementation planned.
+**Status:** IMPLEMENTED (2026-04-07). httpdisk.sys and httpdisk.exe added as initrd entries, startnet.cmd updated to mount ISO via httpdisk.exe first, with SMB fallback.
 
 ## Files Modified
-- `boot.wim` - Added custom startnet.cmd for SMB mapping
-- `boot/menu.ipxe` - Updated initrd entries for SSTR overlay
-- `data/extracted/strelec/startnet.cmd` - Network discovery script
-- `app_ui.py` - SMB share creation/deletion automation
+- `boot.wim` (in `strelec_httpdisk/`) - Injected httpdisk.sys to drivers, httpdisk.exe to System32, updated startnet.cmd, added registry key `Services\HttpDisk`
+- `data/extracted/geminiiso/` - Copied httpdisk.sys and httpdisk.exe for HTTP serving
+- `iso_manager.py` - Added httpdisk initrd lines to `_menu_wimboot()`
+- `boot/menu.ipxe` - Static menu updated with httpdisk entries
+- `docs/solution.md` - This file
 
-## Next Steps
-1. Finalize httpdisk integration (preferred)
-2. Or fix SMB authentication completely
-3. Test on Dell Latitude 5420
+## What was done (2026-04-07)
+1. Mounted boot.wim via DISM at `C:\wim_httpdisk`
+2. Injected `httpdisk.sys` into `Windows\System32\drivers\`
+3. Injected `httpdisk.exe` into `Windows\System32\`
+4. Added registry key `HKLM\ControlSet001\Services\HttpDisk` (Start=0, Type=1, ImagePath=httpdisk.sys)
+5. Replaced `startnet.cmd` with httpdisk-first approach:
+   - Loads httpdisk.sys as driver
+   - Mounts `http://192.168.0.21/geminiiso/strelec.iso` as drive Y:
+   - Launches `Y:\SSTR\MInst\MInst.exe`
+   - Falls back to SMB mapping if httpdisk fails
+6. Committed WIM changes via DISM
+
+## Remaining
+- Test on Dell Latitude 5420
+- Verify httpdisk.exe can mount the ISO (may need a proper .iso file served via HTTP)
