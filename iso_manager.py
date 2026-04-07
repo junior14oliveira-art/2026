@@ -579,6 +579,12 @@ cmd.exe
                     try:
                         with open(startnet_path, "w", encoding="utf-8") as f:
                             f.write(startnet_content)
+                        
+                        # Fix for Sergei Strelec: PEcmd.exe ignores startnet.cmd!
+                        # We must place a copy in the Startup folder so it runs when desktop loads.
+                        mount_iso_path = os.path.join(folder, "mount_iso.cmd")
+                        with open(mount_iso_path, "w", encoding="utf-8") as f:
+                            f.write(startnet_content)
                     except Exception as e:
                         self.logger.error(f"Erro gerando startnet.cmd: {e}")
 
@@ -657,6 +663,10 @@ initrd {iso_url}/boot.wim sources/boot.wim"""
         # CAMINHO_IMG_REDE bat + desktop shortcut available in WinPE RAM disk
         entry += f"\ninitrd {iso_url}/startnet.cmd startnet.cmd"
         entry += f"\ninitrd {iso_url}/startnet.cmd Windows/System32/startnet.cmd"
+
+        # PEcmd bypass: Inject into Windows Startup folder so it runs after Strelec desktop initializes
+        entry += f"\ninitrd {iso_url}/mount_iso.cmd mount_iso.cmd"
+        entry += f"\ninitrd {iso_url}/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd"
 
         entry += "\nboot\n"
         return entry

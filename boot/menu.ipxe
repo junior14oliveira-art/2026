@@ -9,6 +9,7 @@ item ULTIMA_CORRETA ULTIMA_CORRETA.iso [wimboot]
 item WinPEBasicEnhanced WinPEBasicEnhanced [uefi]
 item Windows_11 Windows_11 [uefi]
 item geminiiso geminiiso [wimboot]
+item strelec strelec [wimboot]
 item exit Reboot
 choose target && goto ${target}
 
@@ -93,6 +94,31 @@ initrd http://192.168.0.21/geminiiso/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/geminiiso/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/geminiiso/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/geminiiso/startnet.cmd Windows/System32/startnet.cmd
+boot
+
+:strelec
+# Boot WinPE: strelec
+kernel http://192.168.0.21/strelec/wimboot rawbcd
+initrd http://192.168.0.21/strelec/bootmgr bootmgr
+initrd http://192.168.0.21/strelec/bootmgr bootmgr.efi
+initrd http://192.168.0.21/strelec/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21/strelec/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21/strelec/BCD BCD
+initrd http://192.168.0.21/strelec/BCD boot/BCD
+initrd http://192.168.0.21/strelec/boot.sdi boot.sdi
+initrd http://192.168.0.21/strelec/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21/strelec/boot.wim boot.wim
+initrd http://192.168.0.21/strelec/boot.wim sources/boot.wim
+initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/strelec/httpdisk.sys httpdisk.sys
+initrd http://192.168.0.21/strelec/httpdisk.exe httpdisk.exe
+initrd http://192.168.0.21/strelec/startnet.cmd startnet.cmd
+initrd http://192.168.0.21/strelec/startnet.cmd Windows/System32/startnet.cmd
 boot
 
 

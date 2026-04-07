@@ -1,5 +1,5 @@
 @echo off
-:: PXEGEMINI Launcher v5.2 - Com admin e firewall auto-config
+:: PXEGEMINI Launcher v5.3 - Com admin e firewall auto-config
 cd /d "%~dp0"
 
 :: ============== ADMIN CHECK ==============
