@@ -5,6 +5,7 @@
 :start
 menu PXEGEMINI - Network Boot
 item STRELECLDELL STRELECLDELL [wimboot]
+item ULTIMA_CORRETA ULTIMA_CORRETA.iso [wimboot]
 item WinPEBasicEnhanced WinPEBasicEnhanced [uefi]
 item Windows_11 Windows_11 [uefi]
 item geminiiso geminiiso [wimboot]
@@ -34,8 +35,31 @@ initrd http://192.168.0.21/STRELECLDELL/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/STRELECLDELL/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/STRELECLDELL/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/STRELECLDELL/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
-initrd http://192.168.0.21/STRELECLDELL/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
+boot
+
+:ULTIMA_CORRETA
+# Boot WinPE: ULTIMA_CORRETA.iso
+kernel http://192.168.0.21/ULTIMA_CORRETA/wimboot rawbcd
+initrd http://192.168.0.21/ULTIMA_CORRETA/bootmgr bootmgr
+initrd http://192.168.0.21/ULTIMA_CORRETA/bootmgr bootmgr.efi
+initrd http://192.168.0.21/ULTIMA_CORRETA/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21/ULTIMA_CORRETA/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21/ULTIMA_CORRETA/BCD BCD
+initrd http://192.168.0.21/ULTIMA_CORRETA/BCD boot/BCD
+initrd http://192.168.0.21/ULTIMA_CORRETA/boot.sdi boot.sdi
+initrd http://192.168.0.21/ULTIMA_CORRETA/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21/ULTIMA_CORRETA/boot.wim boot.wim
+initrd http://192.168.0.21/ULTIMA_CORRETA/boot.wim sources/boot.wim
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.sys httpdisk.sys
+initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.exe httpdisk.exe
+initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd startnet.cmd
+initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd Windows/System32/startnet.cmd
 boot
 
 :WinPEBasicEnhanced
@@ -69,8 +93,6 @@ initrd http://192.168.0.21/geminiiso/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/geminiiso/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/geminiiso/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/geminiiso/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/geminiiso/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat
-initrd http://192.168.0.21/geminiiso/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat
 boot
 
 

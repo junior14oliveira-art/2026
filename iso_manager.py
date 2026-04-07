@@ -309,6 +309,12 @@ class ISOManager:
             if efi_files:
                 shutil.copy2(efi_files[0], os.path.join(target, "bootx64.efi"))
 
+            # Utilitarios HTTPDisk
+            for hdd in ["httpdisk.sys", "httpdisk.exe"]:
+                src_hd = os.path.join(self.boot_dir, hdd)
+                if os.path.exists(src_hd):
+                    shutil.copy2(src_hd, os.path.join(target, hdd))
+
             return True
         except Exception as e:
             self.logger.error(f"WinPE extraction failed: {e}")
@@ -552,6 +558,30 @@ reboot
                 key = iso["key"]
                 name = iso.get("name", key)
                 iso_type = iso.get("type", "unknown")
+                folder = iso.get("folder", "")
+                
+                if iso_type == self.TYPE_WIMBOOT and folder and os.path.isdir(folder):
+                    startnet_path = os.path.join(folder, "startnet.cmd")
+                    startnet_content = f"""@echo off
+wpeinit
+echo [PXEGEMINI] Iniciando HTTPDisk...
+httpdisk.exe /mount 0 http://{server_ip}/{key}_raw.iso /size 0 Y:
+if exist Y:\\SSTR\\MInst\\MInst.exe (
+    echo [PXEGEMINI] Disco Virtual Y: Montado com Sucesso.
+    start Y:\\SSTR\\MInst\\MInst.exe
+) else (
+    echo [!] HTTPDisk falhou. Fallback para SMB...
+    net use Z: \\\\{server_ip}\\SSTR /user:Guest ""
+    if exist Z:\\MInst\\MInst.exe start Z:\\MInst\\MInst.exe
+)
+cmd.exe
+"""
+                    try:
+                        with open(startnet_path, "w", encoding="utf-8") as f:
+                            f.write(startnet_content)
+                    except Exception as e:
+                        self.logger.error(f"Erro gerando startnet.cmd: {e}")
+
                 entry = self._make_menu_entry(key, name, iso_type, base_url, boot_url)
                 items.append(f"item {key} {name} [{iso_type}]")
                 entries.append(entry)
@@ -627,8 +657,6 @@ initrd {iso_url}/boot.wim sources/boot.wim"""
         # CAMINHO_IMG_REDE bat + desktop shortcut available in WinPE RAM disk
         entry += f"\ninitrd {iso_url}/startnet.cmd startnet.cmd"
         entry += f"\ninitrd {iso_url}/startnet.cmd Windows/System32/startnet.cmd"
-        entry += f"\ninitrd {iso_url}/SSTR/CAMINHO_IMG_REDE.bat SSTR/CAMINHO_IMG_REDE.bat"
-        entry += f"\ninitrd {iso_url}/Acesso_Rede_Imagem.bat Acesso_Rede_Imagem.bat"
 
         entry += "\nboot\n"
         return entry

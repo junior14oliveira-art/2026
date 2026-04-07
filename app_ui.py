@@ -90,7 +90,7 @@ class StatusCard(ctk.CTkFrame):
 class PXEGEMINIApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("PXEGEMINI v5.0 — Network Boot System")
+        self.title("PXEGEMINI v5.2 — Network Boot System")
         self.geometry("1100x750")
         self.configure(fg_color=COLORS["bg"])
 
@@ -157,7 +157,7 @@ class PXEGEMINIApp(ctk.CTk):
         self.status_led.grid(row=0, column=0, padx=(0, 6))
         self.status_text = ctk.CTkLabel(status_box, text="OFFLINE", font=ctk.CTkFont(size=12, weight="bold"), text_color=COLORS["text_secondary"])
         self.status_text.grid(row=0, column=1)
-        ctk.CTkLabel(status_box, text="v5.0", font=ctk.CTkFont(size=10), text_color=COLORS["text_muted"]).grid(row=1, column=0, columnspan=2, pady=(4, 0))
+        ctk.CTkLabel(status_box, text="v5.2", font=ctk.CTkFont(size=10), text_color=COLORS["text_muted"]).grid(row=1, column=0, columnspan=2, pady=(4, 0))
 
     def _build_main_area(self):
         container = ctk.CTkFrame(self, corner_radius=0, fg_color=COLORS["bg"])
@@ -237,7 +237,7 @@ class PXEGEMINIApp(ctk.CTk):
                                         border_width=1, border_color=COLORS["card_border"], corner_radius=10)
         self.console.pack(padx=30, pady=(4, 20), fill="both", expand=True)
         self.console.configure(state="disabled")
-        self.console.insert("0.0", "PXEGEMINI v5.0 — Sistema inicializado.\n")
+        self.console.insert("0.0", "PXEGEMINI v5.2 — Sistema inicializado.\n")
 
     # ============ RECOGNITION RATHER THAN RECALL ============
 
@@ -329,6 +329,17 @@ class PXEGEMINIApp(ctk.CTk):
         history.pack(padx=30, pady=8, fill="both", expand=True)
 
         changelog = """
+[v5.2] Fix Boot Chain snponly.efi + HTTPDisk
+  +  Descoberto script embutido no snponly.efi ignorando menu.ipxe
+  +  Injecao do HTTPDisk diretamente na pasta /strelec/ (boot direto)
+  +  Servidor HTTP com Range Requests (206) para suporte a ISOs grandes
+  +  startnet.cmd com diagnostico verbose para depuracao de boot
+
+[v5.1] HTTPDisk Engine Dinamico
+  +  ISOs WinPE montadas dinamicamente via HTTP em Y:
+  +  Fim de dependencia e falhas de Server Message Block (SMB)
+  +  Geracao automatica de startnet.cmd por ISO
+
 [v5.0] Multi-ISO Support (Estavel)
   +  Suporte a multiplas ISOs (WinPE, Linux live, UEFI)
   +  Scanner de todos os discos por qualquer ISO
