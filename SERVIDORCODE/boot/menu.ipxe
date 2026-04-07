@@ -1,0 +1,11 @@
+#!ipxe
+# SERVIDORCODE - PXE Fast HTTPDisk Menu
+
+:start
+menu Fast HTTPDisk PXE Root
+item --gap --             -------------------------
+item reboot Reiniciar Servidor
+choose target && goto ${target}
+
+:reboot
+reboot

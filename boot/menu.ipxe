@@ -36,6 +36,8 @@ initrd http://192.168.0.21/STRELECLDELL/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/STRELECLDELL/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/STRELECLDELL/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/STRELECLDELL/mount_iso.cmd mount_iso.cmd
+initrd http://192.168.0.21/STRELECLDELL/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
 boot
 
 :ULTIMA_CORRETA
@@ -61,6 +63,8 @@ initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/ULTIMA_CORRETA/mount_iso.cmd mount_iso.cmd
+initrd http://192.168.0.21/ULTIMA_CORRETA/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
 boot
 
 :WinPEBasicEnhanced
@@ -94,6 +98,8 @@ initrd http://192.168.0.21/geminiiso/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/geminiiso/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/geminiiso/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/geminiiso/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/geminiiso/mount_iso.cmd mount_iso.cmd
+initrd http://192.168.0.21/geminiiso/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
 boot
 
 :strelec
@@ -119,6 +125,8 @@ initrd http://192.168.0.21/strelec/httpdisk.sys httpdisk.sys
 initrd http://192.168.0.21/strelec/httpdisk.exe httpdisk.exe
 initrd http://192.168.0.21/strelec/startnet.cmd startnet.cmd
 initrd http://192.168.0.21/strelec/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21/strelec/mount_iso.cmd mount_iso.cmd
+initrd http://192.168.0.21/strelec/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
 boot
 
 

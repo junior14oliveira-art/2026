@@ -1,0 +1,13 @@
+{
+    "server_ip": "192.168.0.21",
+    "dhcp_port": 67,
+    "mode_proxy": false,
+    "pool_begin": "192.168.0.200",
+    "pool_end": "192.168.0.250",
+    "subnet_mask": "255.255.255.0",
+    "gateway": "192.168.0.1",
+    "dns_server": "8.8.8.8",
+    "tftp_port": 69,
+    "http_port": 80,
+    "boot_dir": "boot"
+}
