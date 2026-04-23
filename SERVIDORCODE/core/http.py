@@ -27,21 +27,24 @@ class RangeHTTPRequestHandler(BaseHTTPRequestHandler):
         # Resolve path
         path = os.path.join(root, relative.replace('/', os.sep))
 
-        # WinPE embedded scripts sometimes look inside hardcoded paths
-        # If it doesn't exist natively, we will try to intercept ISO files mapped.
-        if not os.path.exists(path):
-            # Virtual Mapping: If it requests anything inside /virtual/, we redirect to the active ISO extracted root
-            # Example: http://x/virtual/boot.wim
-            if relative.startswith("virtual/"):
+        # INTERCEPT: Virtual ISO Paths
+        # Pattern: virtual/{key}/filename
+        if relative.startswith("virtual/"):
+            parts = relative.split('/', 2)
+            if len(parts) >= 3:
+                key = parts[1]
+                filename = parts[2]
+                extract_root = os.path.join(root, "data", "extracted", key)
+                if os.path.isdir(extract_root):
+                    path = os.path.join(extract_root, filename.replace('/', os.sep))
+                else:
+                    self.send_error(404, f"ISO extracted root not found for: {key}")
+                    return None
+            else:
+                # Legacy / fallback for single ISO
                 active_extract = getattr(self.server, "active_extract_dir", None)
                 if active_extract:
                     path = os.path.join(active_extract, relative.replace("virtual/", "", 1).replace('/', os.sep))
-                    if not os.path.exists(path):
-                        self.send_error(404, "Not Found")
-                        return None
-            else:
-                self.send_error(404, "Not Found")
-                return None
 
         if os.path.isdir(path):
             self.send_error(403, "Directory listing disabled in FAST HTTP")
@@ -122,31 +125,49 @@ class RangeHTTPRequestHandler(BaseHTTPRequestHandler):
             f[0].close()
 
     def log_message(self, format, *args):
-        # We silence logging because HTTPDisk makes thousands of small requests per second
-        pass
+        # Unsilencing for 404 debug
+        logger = getattr(self.server, 'custom_logger', None)
+        message = format % args
+        if logger:
+            if " 404 " in message:
+                logger.warning(f"HTTP 404: {message}")
+            else:
+                # Still silence the 200/206 to avoid flooding
+                pass
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
 class HTTPD:
     def __init__(self, config, logger=None):
-        self.ip = config.get('server_ip', '0.0.0.0')
+        # We bind to 0.0.0.0 (all interfaces) to avoid connection timeouts on specific Windows adapters
+        self.ip = '0.0.0.0'
         self.port = int(config.get('http_port', 80))
-        self.root = os.path.abspath(config.get('boot_dir', '.'))
         self.logger = logger
+        self.running = True
         self.server = None
-        self.thread = None
+
+    def _log(self, level: str, message: str, *args) -> None:
+        if not self.logger:
+            return
+        getattr(self.logger, level.lower())(message, *args)
 
     def listen(self):
         try:
             self.server = ThreadedHTTPServer((self.ip, self.port), RangeHTTPRequestHandler)
-            self.server.document_root = os.path.dirname(os.path.abspath(__file__)).replace('\\core', '') # Sets root to E:\PXEGEMINI\SERVIDORCODE
-            if self.logger:
-                self.logger.info(f"Otimized HTTP Server ativo em http://{self.ip}:{self.port}")
+            # Calculate root path robustly (two levels up from core/http.py)
+            core_dir = os.path.dirname(os.path.abspath(__file__))
+            self.server.document_root = os.path.dirname(core_dir)
+            
+            # Pass logger to the handler class
+            self.server.custom_logger = self.logger
+            
+            self._log('info', 'Otimized HTTP Server ativo em http://%s:%s', self.ip, self.port)
+            self._log('info', 'Raiz do documento: %s', self.server.document_root)
             self.server.serve_forever()
         except Exception as e:
-            if self.logger:
-                self.logger.error(f"Falha ao iniciar Servidor HTTP: {e}")
+            self._log('error', f"HTTP falhou: {e}")
+            self.stop()
 
     def stop(self):
         if self.server:

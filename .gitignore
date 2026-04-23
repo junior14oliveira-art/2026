@@ -34,3 +34,6 @@ http_results.txt
 test_bcd
 test_wim
 iso_diag.txt
+pxegemini.log
+config.json
+test_resolve.py

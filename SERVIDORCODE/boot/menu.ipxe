@@ -1,11 +1,61 @@
 #!ipxe
-# SERVIDORCODE - PXE Fast HTTPDisk Menu
-
 :start
 menu Fast HTTPDisk PXE Root
-item --gap --             -------------------------
-item reboot Reiniciar Servidor
+item ultima_correta Boot: ultima_correta.iso
+item win11_oficial Boot: Win11_Oficial.iso
+item winpebasic Boot: winpebasic.iso
+item reboot Reboot
 choose target && goto ${target}
-
 :reboot
 reboot
+
+:ultima_correta
+# Fast HTTPDisk: ultima_correta
+kernel http://192.168.0.21:80/boot/wimboot gui rawbcd
+initrd http://192.168.0.21:80/virtual/ultima_correta/bootmgr      bootmgr
+initrd http://192.168.0.21:80/virtual/ultima_correta/bootx64.efi  bootx64.efi
+initrd http://192.168.0.21:80/virtual/ultima_correta/BCD          boot/bcd
+initrd http://192.168.0.21:80/virtual/ultima_correta/BCD          EFI/Microsoft/Boot/BCD
+initrd http://192.168.0.21:80/virtual/ultima_correta/boot.sdi      boot/boot.sdi
+initrd http://192.168.0.21:80/virtual/ultima_correta/boot.wim   SSTR/system/SSTR10X64.WIM
+initrd http://192.168.0.21:80/virtual/ultima_correta/pecmd.ini  Windows/System32/pecmd.ini
+initrd http://192.168.0.21:80/virtual/ultima_correta/hook.cmd      Windows/System32/hook.cmd
+initrd http://192.168.0.21:80/virtual/ultima_correta/startnet.cmd  Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/virtual/ultima_correta/winpeshl.ini  Windows/System32/winpeshl.ini
+initrd http://192.168.0.21:80/boot/httpdisk.sys      Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/boot/httpdisk.exe      Windows/System32/httpdisk.exe
+boot
+
+:win11_oficial
+# Fast HTTPDisk: win11_oficial
+kernel http://192.168.0.21:80/boot/wimboot gui rawbcd
+initrd http://192.168.0.21:80/virtual/win11_oficial/bootmgr      bootmgr
+initrd http://192.168.0.21:80/virtual/win11_oficial/bootx64.efi  bootx64.efi
+initrd http://192.168.0.21:80/virtual/win11_oficial/BCD          boot/bcd
+initrd http://192.168.0.21:80/virtual/win11_oficial/BCD          EFI/Microsoft/Boot/BCD
+initrd http://192.168.0.21:80/virtual/win11_oficial/boot.sdi      boot/boot.sdi
+initrd http://192.168.0.21:80/virtual/win11_oficial/boot.wim   SSTR/system/SSTR10X64.WIM
+initrd http://192.168.0.21:80/virtual/win11_oficial/pecmd.ini  Windows/System32/pecmd.ini
+initrd http://192.168.0.21:80/virtual/win11_oficial/hook.cmd      Windows/System32/hook.cmd
+initrd http://192.168.0.21:80/virtual/win11_oficial/startnet.cmd  Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/virtual/win11_oficial/winpeshl.ini  Windows/System32/winpeshl.ini
+initrd http://192.168.0.21:80/boot/httpdisk.sys      Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/boot/httpdisk.exe      Windows/System32/httpdisk.exe
+boot
+
+:winpebasic
+# Fast HTTPDisk: winpebasic
+kernel http://192.168.0.21:80/boot/wimboot gui rawbcd
+initrd http://192.168.0.21:80/virtual/winpebasic/bootmgr      bootmgr
+initrd http://192.168.0.21:80/virtual/winpebasic/bootx64.efi  bootx64.efi
+initrd http://192.168.0.21:80/virtual/winpebasic/BCD          boot/bcd
+initrd http://192.168.0.21:80/virtual/winpebasic/BCD          EFI/Microsoft/Boot/BCD
+initrd http://192.168.0.21:80/virtual/winpebasic/boot.sdi      boot/boot.sdi
+initrd http://192.168.0.21:80/virtual/winpebasic/boot.wim   SSTR/system/SSTR10X64.WIM
+initrd http://192.168.0.21:80/virtual/winpebasic/pecmd.ini  Windows/System32/pecmd.ini
+initrd http://192.168.0.21:80/virtual/winpebasic/hook.cmd      Windows/System32/hook.cmd
+initrd http://192.168.0.21:80/virtual/winpebasic/startnet.cmd  Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/virtual/winpebasic/winpeshl.ini  Windows/System32/winpeshl.ini
+initrd http://192.168.0.21:80/boot/httpdisk.sys      Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/boot/httpdisk.exe      Windows/System32/httpdisk.exe
+boot

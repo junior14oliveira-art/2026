@@ -1,0 +1,11 @@
+data/isos/
+data/extracted/
+__pycache__/
+*.iso
+*.wim
+*.efi
+boot/ipxe.efi
+boot/snponly.efi
+boot/wimboot
+boot/httpdisk.sys
+boot/httpdisk.exe

@@ -1,134 +1,509 @@
 #!ipxe
-# PXEGEMINI Boot Menu - Generated dynamically
-# Server: 192.168.0.21
+# PXEGEMINI HTTPDisk v5.7 - Server: 192.168.0.21
 
 :start
-menu PXEGEMINI - Network Boot
-item STRELECLDELL STRELECLDELL [wimboot]
-item ULTIMA_CORRETA ULTIMA_CORRETA.iso [wimboot]
-item WinPEBasicEnhanced WinPEBasicEnhanced [uefi]
-item Windows_11 Windows_11 [uefi]
-item geminiiso geminiiso [wimboot]
-item strelec strelec [wimboot]
+menu PXEGEMINI HTTPDisk - Network Boot
+item Core Core.iso  [unknown]
+item MHDD MHDD.ISO  [unknown]
+item STRELEC5410OK STRELEC5410OK.iso  [wimboot]
+item STRELECLDELL STRELECLDELL  [wimboot]
+item STRELECLDELL_WINPE11_IVENTOY_LOG STRELECLDELL_WINPE11_IVENTOY_LOG.iso  [wimboot]
+item STRELECREDEOK STRELECREDEOK.iso  [wimboot]
+item ULTIMA ULTIMA.iso  [wimboot]
+item ULTIMACERTA ULTIMACERTA.iso  [wimboot]
+item ULTIMA_CORRETA ULTIMA_CORRETA.iso  [wimboot]
+item VCR35R VCR35R.iso  [unknown]
+item Win11_Oficial Win11_Oficial.iso  [wimboot]
+item Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR Win11e10 19045.5608.250305-0902.22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR.ISO  [wimboot]
+item WinPEBasicEnhanced WinPEBasicEnhanced  [uefi]
+item WinPEBasicEnhanced_ComMacrium WinPEBasicEnhanced_ComMacrium.iso  [wimboot]
+item Windows_11 Windows_11  [uefi]
+item bbm bbm.ISO  [unknown]
+item geminiiso geminiiso  [wimboot]
+item hdat2 hdat2.iso  [unknown]
+item hdsdos hdsdos.iso  [unknown]
+item strelec strelec  [wimboot]
+item winfast winfast.iso  [wimboot]
+item winfast_iventoy winfast_iventoy.iso  [wimboot]
+item winpebasic winpebasic.iso  [wimboot]
 item exit Reboot
 choose target && goto ${target}
 
+:Core
+# Tipo desconhecido: Core.iso
+chain http://192.168.0.21:80/Core/bootx64.efi || goto Core_fail
+goto exit
+:Core_fail
+echo Falha ao bootar Core.iso. Tipo nao reconhecido.
+goto start
+
+:MHDD
+# Tipo desconhecido: MHDD.ISO
+chain http://192.168.0.21:80/MHDD/bootx64.efi || goto MHDD_fail
+goto exit
+:MHDD_fail
+echo Falha ao bootar MHDD.ISO. Tipo nao reconhecido.
+goto start
+
+:STRELEC5410OK
+# WinPE: STRELEC5410OK.iso
+kernel http://192.168.0.21:80/STRELEC5410OK/wimboot rawbcd
+initrd http://192.168.0.21:80/STRELEC5410OK/bootmgr bootmgr
+initrd http://192.168.0.21:80/STRELEC5410OK/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/STRELEC5410OK/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/STRELEC5410OK/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/STRELEC5410OK/BCD BCD
+initrd http://192.168.0.21:80/STRELEC5410OK/BCD boot/BCD
+initrd http://192.168.0.21:80/STRELEC5410OK/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/STRELEC5410OK/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/STRELEC5410OK/boot.wim boot.wim
+initrd http://192.168.0.21:80/STRELEC5410OK/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELEC5410OK/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/STRELEC5410OK/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/STRELEC5410OK/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/STRELEC5410OK/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELEC5410OK/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELEC5410OK/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/STRELEC5410OK/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
 :STRELECLDELL
-# Boot WinPE: STRELECLDELL
-kernel http://192.168.0.21/STRELECLDELL/wimboot rawbcd
-initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr
-initrd http://192.168.0.21/STRELECLDELL/bootmgr bootmgr.efi
-initrd http://192.168.0.21/STRELECLDELL/bootx64.efi bootmgfw.efi
-initrd http://192.168.0.21/STRELECLDELL/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
-initrd http://192.168.0.21/STRELECLDELL/BCD BCD
-initrd http://192.168.0.21/STRELECLDELL/BCD boot/BCD
-initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot.sdi
-initrd http://192.168.0.21/STRELECLDELL/boot.sdi boot/boot.sdi
-initrd http://192.168.0.21/STRELECLDELL/boot.wim boot.wim
-initrd http://192.168.0.21/STRELECLDELL/boot.wim sources/boot.wim
-initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/STRELECLDELL/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/STRELECLDELL/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/STRELECLDELL/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/STRELECLDELL/httpdisk.sys httpdisk.sys
-initrd http://192.168.0.21/STRELECLDELL/httpdisk.exe httpdisk.exe
-initrd http://192.168.0.21/STRELECLDELL/startnet.cmd startnet.cmd
-initrd http://192.168.0.21/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/STRELECLDELL/mount_iso.cmd mount_iso.cmd
-initrd http://192.168.0.21/STRELECLDELL/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+# WinPE: STRELECLDELL
+kernel http://192.168.0.21:80/STRELECLDELL/wimboot rawbcd
+initrd http://192.168.0.21:80/STRELECLDELL/bootmgr bootmgr
+initrd http://192.168.0.21:80/STRELECLDELL/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/STRELECLDELL/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECLDELL/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECLDELL/BCD BCD
+initrd http://192.168.0.21:80/STRELECLDELL/BCD boot/BCD
+initrd http://192.168.0.21:80/STRELECLDELL/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/STRELECLDELL/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/STRELECLDELL/boot.wim boot.wim
+initrd http://192.168.0.21:80/STRELECLDELL/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/STRELECLDELL/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/STRELECLDELL/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/STRELECLDELL/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECLDELL/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECLDELL/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/STRELECLDELL/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:STRELECLDELL_WINPE11_IVENTOY_LOG
+# WinPE: STRELECLDELL_WINPE11_IVENTOY_LOG.iso
+kernel http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/wimboot rawbcd
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/bootmgr bootmgr
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/BCD BCD
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/BCD boot/BCD
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/boot.wim boot.wim
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/STRELECLDELL_WINPE11_IVENTOY_LOG/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:STRELECREDEOK
+# WinPE: STRELECREDEOK.iso
+kernel http://192.168.0.21:80/STRELECREDEOK/wimboot rawbcd
+initrd http://192.168.0.21:80/STRELECREDEOK/bootmgr bootmgr
+initrd http://192.168.0.21:80/STRELECREDEOK/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/STRELECREDEOK/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECREDEOK/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/STRELECREDEOK/BCD BCD
+initrd http://192.168.0.21:80/STRELECREDEOK/BCD boot/BCD
+initrd http://192.168.0.21:80/STRELECREDEOK/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/STRELECREDEOK/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/STRELECREDEOK/boot.wim boot.wim
+initrd http://192.168.0.21:80/STRELECREDEOK/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/STRELECREDEOK/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/STRELECREDEOK/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/STRELECREDEOK/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/STRELECREDEOK/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECREDEOK/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/STRELECREDEOK/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/STRELECREDEOK/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:ULTIMA
+# WinPE: ULTIMA.iso
+kernel http://192.168.0.21:80/ULTIMA/wimboot rawbcd
+initrd http://192.168.0.21:80/ULTIMA/bootmgr bootmgr
+initrd http://192.168.0.21:80/ULTIMA/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/ULTIMA/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMA/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMA/BCD BCD
+initrd http://192.168.0.21:80/ULTIMA/BCD boot/BCD
+initrd http://192.168.0.21:80/ULTIMA/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/ULTIMA/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/ULTIMA/boot.wim boot.wim
+initrd http://192.168.0.21:80/ULTIMA/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/ULTIMA/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMA/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMA/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/ULTIMA/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/ULTIMA/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/ULTIMA/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMA/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMA/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/ULTIMA/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:ULTIMACERTA
+# WinPE: ULTIMACERTA.iso
+kernel http://192.168.0.21:80/ULTIMACERTA/wimboot rawbcd
+initrd http://192.168.0.21:80/ULTIMACERTA/bootmgr bootmgr
+initrd http://192.168.0.21:80/ULTIMACERTA/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/ULTIMACERTA/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMACERTA/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMACERTA/BCD BCD
+initrd http://192.168.0.21:80/ULTIMACERTA/BCD boot/BCD
+initrd http://192.168.0.21:80/ULTIMACERTA/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/ULTIMACERTA/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/ULTIMACERTA/boot.wim boot.wim
+initrd http://192.168.0.21:80/ULTIMACERTA/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMACERTA/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/ULTIMACERTA/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/ULTIMACERTA/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/ULTIMACERTA/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMACERTA/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMACERTA/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/ULTIMACERTA/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
 boot
 
 :ULTIMA_CORRETA
-# Boot WinPE: ULTIMA_CORRETA.iso
-kernel http://192.168.0.21/ULTIMA_CORRETA/wimboot rawbcd
-initrd http://192.168.0.21/ULTIMA_CORRETA/bootmgr bootmgr
-initrd http://192.168.0.21/ULTIMA_CORRETA/bootmgr bootmgr.efi
-initrd http://192.168.0.21/ULTIMA_CORRETA/bootx64.efi bootmgfw.efi
-initrd http://192.168.0.21/ULTIMA_CORRETA/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
-initrd http://192.168.0.21/ULTIMA_CORRETA/BCD BCD
-initrd http://192.168.0.21/ULTIMA_CORRETA/BCD boot/BCD
-initrd http://192.168.0.21/ULTIMA_CORRETA/boot.sdi boot.sdi
-initrd http://192.168.0.21/ULTIMA_CORRETA/boot.sdi boot/boot.sdi
-initrd http://192.168.0.21/ULTIMA_CORRETA/boot.wim boot.wim
-initrd http://192.168.0.21/ULTIMA_CORRETA/boot.wim sources/boot.wim
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.sys httpdisk.sys
-initrd http://192.168.0.21/ULTIMA_CORRETA/httpdisk.exe httpdisk.exe
-initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd startnet.cmd
-initrd http://192.168.0.21/ULTIMA_CORRETA/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/ULTIMA_CORRETA/mount_iso.cmd mount_iso.cmd
-initrd http://192.168.0.21/ULTIMA_CORRETA/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+# WinPE: ULTIMA_CORRETA.iso
+kernel http://192.168.0.21:80/ULTIMA_CORRETA/wimboot rawbcd
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/bootmgr bootmgr
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/BCD BCD
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/BCD boot/BCD
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/boot.wim boot.wim
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/ULTIMA_CORRETA/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:VCR35R
+# Tipo desconhecido: VCR35R.iso
+chain http://192.168.0.21:80/VCR35R/bootx64.efi || goto VCR35R_fail
+goto exit
+:VCR35R_fail
+echo Falha ao bootar VCR35R.iso. Tipo nao reconhecido.
+goto start
+
+:Win11_Oficial
+# WinPE: Win11_Oficial.iso
+kernel http://192.168.0.21:80/Win11_Oficial/wimboot rawbcd
+initrd http://192.168.0.21:80/Win11_Oficial/bootmgr bootmgr
+initrd http://192.168.0.21:80/Win11_Oficial/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/Win11_Oficial/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/Win11_Oficial/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/Win11_Oficial/BCD BCD
+initrd http://192.168.0.21:80/Win11_Oficial/BCD boot/BCD
+initrd http://192.168.0.21:80/Win11_Oficial/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/Win11_Oficial/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/Win11_Oficial/boot.wim boot.wim
+initrd http://192.168.0.21:80/Win11_Oficial/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/Win11_Oficial/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/Win11_Oficial/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/Win11_Oficial/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/Win11_Oficial/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/Win11_Oficial/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/Win11_Oficial/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/Win11_Oficial/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR
+# WinPE: Win11e10 19045.5608.250305-0902.22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR.ISO
+kernel http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/wimboot rawbcd
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/bootmgr bootmgr
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/BCD BCD
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/BCD boot/BCD
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/boot.wim boot.wim
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/Win11e10_19045_5608_250305-0902_22H2_RELEASE_SVC_PROD1_CLIENTMULTI_X64FRE_PT-BR/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
 boot
 
 :WinPEBasicEnhanced
-# Boot UEFI: WinPEBasicEnhanced
-chain http://192.168.0.21/WinPEBasicEnhanced/bootx64.efi
+# UEFI: WinPEBasicEnhanced
+chain http://192.168.0.21:80/WinPEBasicEnhanced/bootx64.efi
+
+:WinPEBasicEnhanced_ComMacrium
+# WinPE: WinPEBasicEnhanced_ComMacrium.iso
+kernel http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/wimboot rawbcd
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/bootmgr bootmgr
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/BCD BCD
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/BCD boot/BCD
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/boot.wim boot.wim
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/WinPEBasicEnhanced_ComMacrium/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
 
 :Windows_11
-# Boot UEFI: Windows_11
-chain http://192.168.0.21/Windows_11/bootx64.efi
+# UEFI: Windows_11
+chain http://192.168.0.21:80/Windows_11/bootx64.efi
+
+:bbm
+# Tipo desconhecido: bbm.ISO
+chain http://192.168.0.21:80/bbm/bootx64.efi || goto bbm_fail
+goto exit
+:bbm_fail
+echo Falha ao bootar bbm.ISO. Tipo nao reconhecido.
+goto start
 
 :geminiiso
-# Boot WinPE: geminiiso
-kernel http://192.168.0.21/geminiiso/wimboot rawbcd
-initrd http://192.168.0.21/geminiiso/bootmgr bootmgr
-initrd http://192.168.0.21/geminiiso/bootmgr bootmgr.efi
-initrd http://192.168.0.21/geminiiso/bootx64.efi bootmgfw.efi
-initrd http://192.168.0.21/geminiiso/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
-initrd http://192.168.0.21/geminiiso/BCD BCD
-initrd http://192.168.0.21/geminiiso/BCD boot/BCD
-initrd http://192.168.0.21/geminiiso/boot.sdi boot.sdi
-initrd http://192.168.0.21/geminiiso/boot.sdi boot/boot.sdi
-initrd http://192.168.0.21/geminiiso/boot.wim boot.wim
-initrd http://192.168.0.21/geminiiso/boot.wim sources/boot.wim
-initrd http://192.168.0.21/geminiiso/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/geminiiso/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/geminiiso/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/geminiiso/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/geminiiso/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/geminiiso/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/geminiiso/httpdisk.sys httpdisk.sys
-initrd http://192.168.0.21/geminiiso/httpdisk.exe httpdisk.exe
-initrd http://192.168.0.21/geminiiso/startnet.cmd startnet.cmd
-initrd http://192.168.0.21/geminiiso/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/geminiiso/mount_iso.cmd mount_iso.cmd
-initrd http://192.168.0.21/geminiiso/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+# WinPE: geminiiso
+kernel http://192.168.0.21:80/geminiiso/wimboot rawbcd
+initrd http://192.168.0.21:80/geminiiso/bootmgr bootmgr
+initrd http://192.168.0.21:80/geminiiso/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/geminiiso/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/geminiiso/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/geminiiso/BCD BCD
+initrd http://192.168.0.21:80/geminiiso/BCD boot/BCD
+initrd http://192.168.0.21:80/geminiiso/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/geminiiso/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/geminiiso/boot.wim boot.wim
+initrd http://192.168.0.21:80/geminiiso/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/geminiiso/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/geminiiso/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/geminiiso/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/geminiiso/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/geminiiso/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/geminiiso/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/geminiiso/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/geminiiso/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/geminiiso/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/geminiiso/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/geminiiso/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/geminiiso/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/geminiiso/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
 boot
+
+:hdat2
+# Tipo desconhecido: hdat2.iso
+chain http://192.168.0.21:80/hdat2/bootx64.efi || goto hdat2_fail
+goto exit
+:hdat2_fail
+echo Falha ao bootar hdat2.iso. Tipo nao reconhecido.
+goto start
+
+:hdsdos
+# Tipo desconhecido: hdsdos.iso
+chain http://192.168.0.21:80/hdsdos/bootx64.efi || goto hdsdos_fail
+goto exit
+:hdsdos_fail
+echo Falha ao bootar hdsdos.iso. Tipo nao reconhecido.
+goto start
 
 :strelec
-# Boot WinPE: strelec
-kernel http://192.168.0.21/strelec/wimboot rawbcd
-initrd http://192.168.0.21/strelec/bootmgr bootmgr
-initrd http://192.168.0.21/strelec/bootmgr bootmgr.efi
-initrd http://192.168.0.21/strelec/bootx64.efi bootmgfw.efi
-initrd http://192.168.0.21/strelec/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
-initrd http://192.168.0.21/strelec/BCD BCD
-initrd http://192.168.0.21/strelec/BCD boot/BCD
-initrd http://192.168.0.21/strelec/boot.sdi boot.sdi
-initrd http://192.168.0.21/strelec/boot.sdi boot/boot.sdi
-initrd http://192.168.0.21/strelec/boot.wim boot.wim
-initrd http://192.168.0.21/strelec/boot.wim sources/boot.wim
-initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/strelec/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
-initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
-initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
-initrd http://192.168.0.21/strelec/httpdisk.sys httpdisk.sys
-initrd http://192.168.0.21/strelec/httpdisk.exe httpdisk.exe
-initrd http://192.168.0.21/strelec/startnet.cmd startnet.cmd
-initrd http://192.168.0.21/strelec/startnet.cmd Windows/System32/startnet.cmd
-initrd http://192.168.0.21/strelec/mount_iso.cmd mount_iso.cmd
-initrd http://192.168.0.21/strelec/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+# WinPE: strelec
+kernel http://192.168.0.21:80/strelec/wimboot rawbcd
+initrd http://192.168.0.21:80/strelec/bootmgr bootmgr
+initrd http://192.168.0.21:80/strelec/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/strelec/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/strelec/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/strelec/BCD BCD
+initrd http://192.168.0.21:80/strelec/BCD boot/BCD
+initrd http://192.168.0.21:80/strelec/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/strelec/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/strelec/boot.wim boot.wim
+initrd http://192.168.0.21:80/strelec/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/strelec/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/strelec/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/strelec/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/strelec/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/strelec/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/strelec/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/strelec/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/strelec/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/strelec/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/strelec/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/strelec/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/strelec/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/strelec/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
 boot
 
+:winfast
+# WinPE: winfast.iso
+kernel http://192.168.0.21:80/winfast/wimboot rawbcd
+initrd http://192.168.0.21:80/winfast/bootmgr bootmgr
+initrd http://192.168.0.21:80/winfast/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/winfast/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/winfast/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/winfast/BCD BCD
+initrd http://192.168.0.21:80/winfast/BCD boot/BCD
+initrd http://192.168.0.21:80/winfast/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/winfast/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/winfast/boot.wim boot.wim
+initrd http://192.168.0.21:80/winfast/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/winfast/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winfast/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winfast/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winfast/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winfast/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winfast/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winfast/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/winfast/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/winfast/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/winfast/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/winfast/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/winfast/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/winfast/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:winfast_iventoy
+# WinPE: winfast_iventoy.iso
+kernel http://192.168.0.21:80/winfast_iventoy/wimboot rawbcd
+initrd http://192.168.0.21:80/winfast_iventoy/bootmgr bootmgr
+initrd http://192.168.0.21:80/winfast_iventoy/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/winfast_iventoy/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/winfast_iventoy/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/winfast_iventoy/BCD BCD
+initrd http://192.168.0.21:80/winfast_iventoy/BCD boot/BCD
+initrd http://192.168.0.21:80/winfast_iventoy/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/winfast_iventoy/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/winfast_iventoy/boot.wim boot.wim
+initrd http://192.168.0.21:80/winfast_iventoy/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winfast_iventoy/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/winfast_iventoy/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/winfast_iventoy/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/winfast_iventoy/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/winfast_iventoy/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/winfast_iventoy/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/winfast_iventoy/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
+
+:winpebasic
+# WinPE: winpebasic.iso
+kernel http://192.168.0.21:80/winpebasic/wimboot rawbcd
+initrd http://192.168.0.21:80/winpebasic/bootmgr bootmgr
+initrd http://192.168.0.21:80/winpebasic/bootmgr bootmgr.efi
+initrd http://192.168.0.21:80/winpebasic/bootx64.efi bootmgfw.efi
+initrd http://192.168.0.21:80/winpebasic/bootx64.efi EFI/Microsoft/Boot/bootmgfw.efi
+initrd http://192.168.0.21:80/winpebasic/BCD BCD
+initrd http://192.168.0.21:80/winpebasic/BCD boot/BCD
+initrd http://192.168.0.21:80/winpebasic/boot.sdi boot.sdi
+initrd http://192.168.0.21:80/winpebasic/boot.sdi boot/boot.sdi
+initrd http://192.168.0.21:80/winpebasic/boot.wim boot.wim
+initrd http://192.168.0.21:80/winpebasic/boot.wim sources/boot.wim
+initrd http://192.168.0.21:80/winpebasic/Fonts/segmono_boot.ttf Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winpebasic/Fonts/segmono_boot.ttf EFI/Microsoft/Boot/Fonts/segmono_boot.ttf
+initrd http://192.168.0.21:80/winpebasic/Fonts/segoe_slboot.ttf Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winpebasic/Fonts/segoe_slboot.ttf EFI/Microsoft/Boot/Fonts/segoe_slboot.ttf
+initrd http://192.168.0.21:80/winpebasic/Fonts/wgl4_boot.ttf Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winpebasic/Fonts/wgl4_boot.ttf EFI/Microsoft/Boot/Fonts/wgl4_boot.ttf
+initrd http://192.168.0.21:80/winpebasic/httpdisk.sys Windows/System32/drivers/httpdisk.sys
+initrd http://192.168.0.21:80/winpebasic/httpdisk.exe Windows/System32/httpdisk.exe
+initrd http://192.168.0.21:80/winpebasic/startnet.cmd Windows/System32/startnet.cmd
+initrd http://192.168.0.21:80/winpebasic/mount_iso.cmd Windows/System32/mount_iso.cmd
+initrd http://192.168.0.21:80/winpebasic/mount_iso.cmd Users/Default/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/mount_iso.cmd
+initrd http://192.168.0.21:80/winpebasic/MACRIUM_REDE.cmd Windows/System32/MACRIUM_REDE.cmd
+initrd http://192.168.0.21:80/winpebasic/MACRIUM_REDE.cmd Users/Default/Desktop/MACRIUM_REDE.cmd
+boot
 
 :exit
 reboot

@@ -1,0 +1,10 @@
+#!ipxe
+set menu-url http://192.168.0.21:80/boot/menu.ipxe
+chain ${menu-url} || goto retry
+:retry
+dhcp || goto shell
+chain ${menu-url} || goto shell
+:shell
+echo [PXEGEMINI] Falha ao carregar o menu HTTP.
+echo [PXEGEMINI] Tente: dhcp ; chain ${menu-url}
+shell

@@ -19,11 +19,13 @@ class HTTPD:
         self.ip = config.get('server_ip', '0.0.0.0')
         self.port = int(config.get('http_port', 80))
         self.netboot_directory = config.get('extract_dir', '.')
+        self.boot_directory = config.get('boot_dir', 'boot')
         self.logger = logger
         self.server = None
 
     def _make_handler(self):
         root = self.netboot_directory
+        boot_root = self.boot_directory
         logger = self.logger
 
         class RequestHandler(http.server.BaseHTTPRequestHandler):
@@ -34,6 +36,20 @@ class HTTPD:
                 relative = unquote(parsed.path.lstrip('/'))
                 if not relative:
                     return None
+
+                # Boot assets live outside extract_dir. Keep them under /boot/
+                # to mirror the second-stage HTTP handoff used by iPXE.
+                if relative in {'menu.ipxe', 'boot.ipxe', 'autoexec.ipxe'}:
+                    relative = f'boot/{relative}'
+                if relative.startswith('boot/'):
+                    boot_relative = relative[5:]
+                    if not boot_relative:
+                        return None
+                    try:
+                        return helpers.normalize_path(
+                            boot_root, boot_relative.replace('/', os.sep))
+                    except helpers.PathTraversalException:
+                        return 'FORBIDDEN'
 
                 if relative.startswith("strelec/"):
                     relative = relative.replace("strelec/", "strelec\\", 1)
@@ -141,8 +157,8 @@ class HTTPD:
         handler = self._make_handler()
         self.server = _ThreadingHTTPServer((self.ip, self.port), handler)
         if self.logger:
-            self.logger.info('HTTP ativo em http://%s:%s/ [Range OK]',
-                             self.ip, self.port)
+            self.logger.info('HTTP ativo em http://%s:%s/ [Range OK | boot=%s]',
+                             self.ip, self.port, self.boot_directory)
         self.server.serve_forever(poll_interval=0.5)
 
     def stop(self):

@@ -5,9 +5,9 @@ ping 127.0.0.1 -n 10 > nul
 
 echo.
 echo Tentando mapear servidor PXE (192.168.0.21)...
-net use Y: \\192.168.0.21\STRELEC /user:Guest "" 
+net use Y: \\192.168.0.21\SSTR /user:Guest "" 
 
-if exist Y:\SSTR\ (
+if exist Y:\MInst\ (
     echo.
     echo [SUCESSO] Os programas do Strelec foram conectados com sucesso na unidade Y: !!!
     echo.
