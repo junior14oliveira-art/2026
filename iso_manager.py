@@ -310,6 +310,21 @@ class ISOManager:
                     results.append(os.path.join(root, f))
         return results
 
+    def _robust_copy(self, src, dst, retries=3, delay=0.5):
+        """Copies a file, retrying if it's locked (PermissionError 13)."""
+        import time
+        for i in range(retries):
+            try:
+                shutil.copy2(src, dst)
+                return True
+            except PermissionError:
+                if i < retries - 1:
+                    time.sleep(delay)
+                    continue
+                self._log("warning", "Acesso negado ao copiar %s para %s (arquivo em uso?)", src, dst)
+                raise
+        return False
+
     def _extract_wimboot(self, drive, target):
         """Extrai componentes WinPE: .wim, BCD, boot.sdi, fonts, bootmgr, efi."""
         try:
@@ -317,35 +332,35 @@ class ISOManager:
             wims = self._find_all_recursive(drive, r".*\.wim$")
             if wims:
                 biggest = max(wims, key=lambda p: os.path.getsize(p))
-                shutil.copy2(biggest, os.path.join(target, "boot.wim"))
+                self._robust_copy(biggest, os.path.join(target, "boot.wim"))
 
             # boot.sdi
             sdi = self._find_recursive(drive, r"^boot\.sdi$")
             if sdi:
-                shutil.copy2(sdi, os.path.join(target, "boot.sdi"))
+                self._robust_copy(sdi, os.path.join(target, "boot.sdi"))
 
             # BCD
             bcd = self._find_recursive(drive, r"^BCD$")
             if bcd:
-                shutil.copy2(bcd, os.path.join(target, "BCD"))
+                self._robust_copy(bcd, os.path.join(target, "BCD"))
 
             # bootmgr
             bm = os.path.join(drive, "bootmgr")
             if os.path.exists(bm):
-                shutil.copy2(bm, os.path.join(target, "bootmgr"))
+                self._robust_copy(bm, os.path.join(target, "bootmgr"))
 
             # bootx64.efi
             efi = self._find_recursive(drive, r"^bootx64\.efi$")
             if not efi:
                 efi = self._find_recursive(drive, r"^bootmgfw\.efi$")
             if efi:
-                shutil.copy2(efi, os.path.join(target, "bootx64.efi"))
+                self._robust_copy(efi, os.path.join(target, "bootx64.efi"))
 
             # Fonts
             font_dir = os.path.join(target, "Fonts")
             os.makedirs(font_dir, exist_ok=True)
             for ttf in self._find_all_recursive(drive, r".*\.ttf$")[:10]:
-                shutil.copy2(ttf, os.path.join(font_dir, os.path.basename(ttf)))
+                self._robust_copy(ttf, os.path.join(font_dir, os.path.basename(ttf)))
 
             return True
         except Exception as e:

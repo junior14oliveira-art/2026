@@ -271,7 +271,13 @@ class DHCPD:
                                   client_mac, lease_ip, boot_file, '4011(BINL)' if is_binl_port else '67')
                         packet = self._build_packet(message, 2, lease_ip, boot_file, include_pxe_vendor)
                         # Always broadcast — client has no IP yet.
-                        for dest in ('255.255.255.255', self.broadcast):
+                        # Prioritize subnet broadcast for Windows multi-interface reliability.
+                        targets = []
+                        if self.broadcast:
+                            targets.append(self.broadcast)
+                        targets.append('255.255.255.255')
+
+                        for dest in targets:
                             try:
                                 s.sendto(packet, (dest, 68))
                             except OSError:

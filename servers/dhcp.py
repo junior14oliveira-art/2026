@@ -237,13 +237,15 @@ class DHCPD:
 
         client_has_ip = (ciaddr != b'\x00\x00\x00\x00')
 
-        # Always include the limited broadcast — it works in all scenarios
-        # and is required when the client does not yet have an IP.
-        add('255.255.255.255', 68)
-
+        # On Windows, especially with multiple NICs, broadcasting to the 
+        # subnet-specific broadcast address (e.g. 192.168.0.255) is much 
+        # more reliable than 255.255.255.255, which might be routed to a 
+        # virtual loopback or the wrong adapter.
         if not self.mode_proxy:
-            # Also include the subnet broadcast for non-proxy full-DHCP mode.
             add(self.broadcast, 68)
+
+        # Also include the limited broadcast as a fallback.
+        add('255.255.255.255', 68)
 
         # If the client already has an IP (i.e. DHCP REQUEST after OFFER),
         # we can unicast directly to it as well.
