@@ -23,7 +23,9 @@ class DHCPD:
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         
-        # Dual socket for Proxy Mode capability
+        # Dual socket for Proxy Mode / BINL capability
+        # Always open port 4011 (BINL) so that Dell/HP UEFI firmware
+        # that sends ProxyDHCP requests directly to port 4011 is served.
         self.sock_binl = None
         self.running = True
         self.leases: Dict[str, Dict[str, float]] = {}
@@ -139,8 +141,9 @@ class DHCPD:
         packet[4:8] = request[4:8]
         packet[8:12] = request[8:12]
         
-        if self.mode_proxy:
-            packet[10:12] = b'\x80\x00'
+        # Force the broadcast flag always — client has no IP at DISCOVER time
+        # and cannot receive unicast. Dell UEFI requires this unconditionally.
+        packet[10:12] = b'\x80\x00'
             
         packet[24:28] = request[24:28]
         packet[28:44] = request[28:44]
@@ -173,7 +176,17 @@ class DHCPD:
         vendor = b'PXEClient'
         options.extend(struct.pack('BB', 60, len(vendor)) + vendor)
         if include_pxe_vendor:
-            options.extend(bytes([43, 10, 6, 1, 8, 10, 4, 0, 80, 88, 69, 255]))
+            # Option 43: Vendor-encapsulated PXE options (properly structured)
+            # Sub-option 6 (PXE_DISCOVERY_CONTROL) = 0x08 -> use list only, no multicast
+            # Sub-option 10 (PXE_MENU_PROMPT)      = prompt string
+            # Sub-option 255 (end)
+            # Dell UEFI validates this structure before accepting the OFFER.
+            pxe_menu_prompt = b'\x00PXE'
+            vendor_encap = bytearray()
+            vendor_encap += bytes([6, 1, 8])
+            vendor_encap += bytes([10, len(pxe_menu_prompt)]) + pxe_menu_prompt
+            vendor_encap += bytes([255])
+            options.extend(struct.pack('BB', 43, len(vendor_encap)) + bytes(vendor_encap))
             
         options.append(255)
         packet[240:240 + len(options)] = options
@@ -182,25 +195,35 @@ class DHCPD:
     def listen(self) -> None:
         try:
             self.sock.bind(('', self.port))
-            if self.mode_proxy:
+            # ALWAYS open port 4011 (BINL/ProxyDHCP), regardless of mode_proxy.
+            # Dell and HP UEFI sends a separate ProxyDHCP Discover to :4011
+            # after receiving the DHCP Offer on port 68. Without a response
+            # there, the firmware repeats DISCOVER indefinitely.
+            try:
                 self.sock_binl = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.sock_binl.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 self.sock_binl.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 self.sock_binl.bind(('', 4011))
                 self.sock_binl.settimeout(0.5)
+                self._log('info', 'BINL/ProxyDHCP socket aberto na porta 4011')
+            except Exception as binl_err:
+                self._log('warning', 'Nao foi possivel abrir porta 4011 (BINL): %s', binl_err)
+                self.sock_binl = None
             self.sock.settimeout(0.5)
         except Exception as e:
             self._log('error', f"Bind falhou: {e}")
             return
 
         mode_label = 'ProxyDHCP' if self.mode_proxy else 'DHCP'
-        self._log('info', '%s ativo em %s:%s', mode_label, self.ip, self.port)
-        
+        self._log('info', '%s ativo em %s:%s | BINL porta 4011 %s', mode_label, self.ip, self.port,
+                  'aberta' if self.sock_binl else 'FALHOU')
+
         import select
         try:
             while self.running:
                 sockets = [self.sock]
-                if self.mode_proxy and self.sock_binl:
+                # Always include sock_binl (port 4011) if it was opened.
+                if self.sock_binl:
                     sockets.append(self.sock_binl)
                     
                 try:
@@ -238,34 +261,39 @@ class DHCPD:
                     is_ipxe = self._is_ipxe(options)
                     boot_file = self._boot_file_for(client_mac, options, is_ipxe)
                     include_pxe_vendor = not is_ipxe
-                    
+                    is_binl_port = (self.sock_binl is not None and s == self.sock_binl)
+
                     if is_ipxe and msg_type == TYPE_REQUEST:
                         self._log('info', 'iPXE solicitando Boot: %s -> %s', client_mac, boot_file)
-                        
+
                     if msg_type == TYPE_DISCOVER:
-                        self._log('info', 'DHCP DISCOVER recebido de %s -> oferta %s | boot %s', client_mac, lease_ip, boot_file)
+                        self._log('info', 'DHCP DISCOVER %s -> oferta %s | boot %s | porta=%s',
+                                  client_mac, lease_ip, boot_file, '4011(BINL)' if is_binl_port else '67')
                         packet = self._build_packet(message, 2, lease_ip, boot_file, include_pxe_vendor)
-                        # Fixed broadcast on Windows: use the calculated subnet broadcast if possible
-                        try:
-                            s.sendto(packet, (self.reply_broadcast, 68))
-                        except OSError as e:
-                            self._log('warning', f"Falha sendto broadcast global, tentando rede local: {e}")
-                            s.sendto(packet, (self.broadcast, 68))
-                        self._log('info', 'DHCP OFFER enviado')
-                        
+                        # Always broadcast — client has no IP yet.
+                        for dest in ('255.255.255.255', self.broadcast):
+                            try:
+                                s.sendto(packet, (dest, 68))
+                            except OSError:
+                                pass
+                        self._log('info', 'DHCP OFFER enviado [porta=%s]', '4011' if is_binl_port else '67')
+
                     elif msg_type == TYPE_REQUEST or msg_type == 8:
                         if msg_type == 8 and not self.mode_proxy:
                             continue # Ignore DHCPINFORM if we are the real DHCP
                         self._log('info', 'DHCP REQUEST recebido de %s', client_mac)
                         packet = self._build_packet(message, 5, lease_ip, boot_file, include_pxe_vendor)
-                        
-                        # Windows Safety: Use local broadcast or client address if available
-                        dest = self.reply_broadcast if addr[0] == '0.0.0.0' else addr[0]
-                        try:
-                            s.sendto(packet, (dest, 68))
-                        except Exception:
-                            # Final fallback to subnet broadcast
-                            s.sendto(packet, (self.broadcast, 68))
+                        ciaddr = message[12:16]
+                        client_has_ip = (ciaddr != b'\x00\x00\x00\x00')
+                        if client_has_ip and addr[0] != '0.0.0.0':
+                            targets = ['255.255.255.255', addr[0]]
+                        else:
+                            targets = ['255.255.255.255', self.broadcast]
+                        for dest in targets:
+                            try:
+                                s.sendto(packet, (dest, 68))
+                            except Exception:
+                                pass
                         self._log('info', 'DHCP ACK enviado')
         finally:
             self.stop()
