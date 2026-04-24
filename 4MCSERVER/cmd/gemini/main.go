@@ -122,8 +122,15 @@ func main() {
 	mux.Handle("/", http.FileServer(http.Dir("./static")))
 
 	log.Println("[INFO] Painel 4MCSERVER disponível em http://localhost:8080")
+	
+	// Logging Middleware
+	loggedMux := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("[HTTP] %s %s", r.Method, r.URL.Path)
+		mux.ServeHTTP(w, r)
+	})
+
 	go func() {
-		if err := http.ListenAndServe(":8080", mux); err != nil {
+		if err := http.ListenAndServe(":8080", loggedMux); err != nil {
 			log.Fatalf("[ERRO] Servidor web: %v", err)
 		}
 	}()
