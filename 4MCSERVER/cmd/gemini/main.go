@@ -104,7 +104,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 func main() {
 	log.SetOutput(logCatcher)
 	log.Println(" ================================================================")
-	log.Println("   4MCSERVER v2.0.5  |  Ultra PXE Engine  |  Powered by Go")
+	log.Println("   4MCSERVER v2.0.7  |  Ultra PXE Engine  |  Powered by Go")
 	log.Println(" ================================================================")
 
 	os.MkdirAll(isoFolder, 0755)
@@ -443,10 +443,23 @@ func prepareISO(iso *ISOEntry) error {
 					Copy-Item $f.FullName $dest -Force;
 				}
 			}
-			# Fallback para boot.wim se nao encontrar pelo nome exato
-			if (-not (Test-Path (Join-Path '%s' 'boot.wim'))) {
-				$maxWim = Get-ChildItem -Path $d -Filter *.wim -Recurse | Sort-Object Length -Descending | Select-Object -First 1;
-				if ($maxWim) { Copy-Item $maxWim.FullName (Join-Path '%s' 'boot.wim') -Force }
+			# BUSCA INTELIGENTE DE WIM (Heurística Avançada)
+			if ($isStrelec) {
+				$wim = (Get-ChildItem -Path "$d\SSTR\system\*.wim" -File | Sort-Object Length -Descending | Select-Object -First 1).FullName
+			}
+			if (-not $wim) {
+				$wim = (Get-ChildItem -Path "$d\sources\boot.wim" -File | Select-Object -First 1).FullName
+			}
+			if (-not $wim) {
+				log-message "WIM padrao nao encontrado. Buscando maior arquivo .WIM na ISO..."
+				$wim = (Get-ChildItem -Path "$d\*" -Include *.wim -Recurse -File | Sort-Object Length -Descending | Select-Object -First 1).FullName
+			}
+
+			if ($wim) {
+				log-message "WIM encontrado: $(Split-Path $wim -Leaf). Copiando..."
+				Copy-Item -Path $wim -Destination (Join-Path '%s' 'boot.wim') -Force
+			} else {
+				throw "Nenhum arquivo .WIM bootavel encontrado na ISO!"
 			}
 			Dismount-DiskImage -ImagePath '%s';
 			# LIMPEZA DE ATRIBUTOS (Crucial para evitar 404 no Servidor HTTP)
@@ -561,6 +574,8 @@ func handleMenu(w http.ResponseWriter, r *http.Request) {
 			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/winpeshl.ini  Windows/System32/winpeshl.ini\n", base, iso.Key))
 			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.sys      Windows/System32/drivers/httpdisk.sys\n", base))
 			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.exe      Windows/System32/httpdisk.exe\n", base))
+			sb.WriteString(fmt.Sprintf("initrd %s/boot/winpe.jpg         Windows/System32/winpe.jpg\n", base))
+			sb.WriteString(fmt.Sprintf("initrd %s/boot/img0.jpg          Windows/Web/Wallpaper/Windows/img0.jpg\n", base))
 			sb.WriteString("boot\n\n")
 		} else {
 			sb.WriteString(fmt.Sprintf("sanboot http://${next-server}:8080/iso/%s\n\n", iso.Name))
