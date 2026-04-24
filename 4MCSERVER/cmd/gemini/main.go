@@ -182,7 +182,7 @@ func handleStart(w http.ResponseWriter, r *http.Request) {
 		// Iniciar TFTP também
 		bootDir := "./boot"
 		os.MkdirAll(bootDir, 0755)
-		tftpServer = tftp.NewServer(bootDir)
+		tftpServer = tftp.NewServer(listenIP, bootDir)
 		if err := tftpServer.Listen(); err != nil {
 			log.Printf("[ERRO] TFTP: %v", err)
 		}

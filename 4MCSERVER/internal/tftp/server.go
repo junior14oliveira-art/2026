@@ -9,17 +9,18 @@ import (
 )
 
 type Server struct {
+	IP       string
 	BootPath string
 	Running  bool
 	conn     *net.UDPConn
 }
 
-func NewServer(path string) *Server {
-	return &Server{BootPath: path}
+func NewServer(ip string, path string) *Server {
+	return &Server{IP: ip, BootPath: path}
 }
 
 func (s *Server) Listen() error {
-	addr, err := net.ResolveUDPAddr("udp4", ":69")
+	addr, err := net.ResolveUDPAddr("udp4", s.IP+":69")
 	if err != nil {
 		return err
 	}
@@ -62,7 +63,8 @@ func (s *Server) sendFile(name string, addr *net.UDPAddr) {
 	}
 
 	blockSize := 512
-	conn, _ := net.DialUDP("udp4", nil, addr)
+	localAddr, _ := net.ResolveUDPAddr("udp4", s.IP+":0") // Porta efemera no IP certo
+	conn, _ := net.DialUDP("udp4", localAddr, addr)
 	defer conn.Close()
 
 	ackBuf := make([]byte, 16)

@@ -32,6 +32,9 @@ echo  [0.1/3] Configurando Firewall do Windows...
 netsh advfirewall firewall delete rule name="4MCSERVER" >nul 2>&1
 netsh advfirewall firewall add rule name="4MCSERVER" dir=in action=allow program="%~dp04mcserver.exe" enable=yes >nul 2>&1
 netsh advfirewall firewall add rule name="4MCSERVER" dir=out action=allow program="%~dp04mcserver.exe" enable=yes >nul 2>&1
+:: Regras explicitas por porta para garantir
+netsh advfirewall firewall add rule name="4MCSERVER_UDP" dir=in action=allow protocol=UDP localport=67,68,69,4011 enable=yes >nul 2>&1
+netsh advfirewall firewall add rule name="4MCSERVER_TCP" dir=in action=allow protocol=TCP localport=80,8080 enable=yes >nul 2>&1
 
 :: ----- Compilar (sempre recompila para garantir versao mais nova) -----
 echo  [1/3] Compilando projeto Go...
