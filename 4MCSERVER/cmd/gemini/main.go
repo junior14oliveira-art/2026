@@ -104,7 +104,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 func main() {
 	log.SetOutput(logCatcher)
 	log.Println(" ================================================================")
-	log.Println("   4MCSERVER v2.0.2  |  Ultra PXE Engine  |  Powered by Go")
+	log.Println("   4MCSERVER v2.0.3  |  Ultra PXE Engine  |  Powered by Go")
 	log.Println(" ================================================================")
 
 	os.MkdirAll(isoFolder, 0755)
@@ -186,14 +186,18 @@ func handleLogs(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleStart(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+	if w != nil { w.Header().Set("Content-Type", "application/json") }
 	mu.Lock()
 	defer mu.Unlock()
-	if !state.Running {
-		listenIP := state.SelectedIP
-		if listenIP == "" {
-			listenIP = "0.0.0.0"
-		}
+	
+	// Se já estiver rodando, para primeiro (permite restart com novo IP)
+	if dhcpServer != nil { dhcpServer.Stop(); dhcpServer = nil }
+	if tftpServer != nil { tftpServer.Stop(); tftpServer = nil }
+
+	listenIP := state.SelectedIP
+	if listenIP == "" {
+		listenIP = "0.0.0.0"
+	}
 
 		// Motor DHCP
 		dhcpSrv := dhcp.NewServer(listenIP)
@@ -215,8 +219,8 @@ func handleStart(w http.ResponseWriter, r *http.Request) {
 
 		state.Running = true
 		log.Printf("[SERVIÇOS] Servidores ATIVOS na interface %s", listenIP)
-	}
-	json.NewEncoder(w).Encode(map[string]string{"status": "started"})
+	
+	if w != nil { json.NewEncoder(w).Encode(map[string]string{"status": "started"}) }
 }
 
 func handleStop(w http.ResponseWriter, r *http.Request) {
@@ -345,7 +349,18 @@ func handleNetSelect(w http.ResponseWriter, r *http.Request) {
 	state.SelectedIP = ip
 	mu.Unlock()
 	log.Printf("[NET] Interface de saída definida para %s", ip)
-	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+	
+	// Reinicia serviços automaticamente se já estiverem rodando
+	mu.Lock()
+	if state.Running {
+		mu.Unlock()
+		log.Println("[NET] Reiniciando motores no novo IP...")
+		handleStart(nil, nil) // Chamada interna segura pois handleStart agora limpa os antigos
+	} else {
+		mu.Unlock()
+	}
+	
+	if w != nil { json.NewEncoder(w).Encode(map[string]bool{"success": true}) }
 }
 
 // ─────────────────────────────────────────────
