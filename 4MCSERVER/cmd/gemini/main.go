@@ -372,7 +372,11 @@ func prepareISO(iso *ISOEntry) error {
 	targetDir := filepath.Join("./data/extracted", iso.Key)
 	os.MkdirAll(targetDir, 0755)
 
+	absIsoPath, _ := filepath.Abs(iso.Path)
+	absTargetDir, _ := filepath.Abs(targetDir)
+
 	psCmd := fmt.Sprintf(`
+		$ErrorActionPreference = 'Stop';
 		$iso = '%s';
 		$target = '%s';
 		Mount-DiskImage -ImagePath $iso;
@@ -399,11 +403,17 @@ func prepareISO(iso *ISOEntry) error {
 				if ($maxWim) { cp $maxWim.FullName (Join-Path $target 'boot.wim') -Force; }
 			}
 			Dismount-DiskImage -ImagePath $iso;
+		} else {
+			throw "Falha ao obter volume da ISO montada.";
 		}
-	`, iso.Path, targetDir)
+	`, absIsoPath, absTargetDir)
 
 	cmd := exec.Command("powershell", "-Command", psCmd)
-	return cmd.Run()
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("PowerShell error: %v, Output: %s", err, string(out))
+	}
+	return nil
 }
 
 func generateHooks(iso *ISOEntry, serverIP string) error {
