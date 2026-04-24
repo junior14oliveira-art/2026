@@ -104,7 +104,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 func main() {
 	log.SetOutput(logCatcher)
 	log.Println(" ================================================================")
-	log.Println("   4MCSERVER v2.0.4  |  Ultra PXE Engine  |  Powered by Go")
+	log.Println("   4MCSERVER v2.0.5  |  Ultra PXE Engine  |  Powered by Go")
 	log.Println(" ================================================================")
 
 	os.MkdirAll(isoFolder, 0755)
@@ -536,6 +536,9 @@ func handleMenu(w http.ResponseWriter, r *http.Request) {
 	sb.WriteString("item --gap --             --- UTILITARIOS ---\n")
 	sb.WriteString("item shell                iPXE Shell\n")
 	sb.WriteString("item reboot               Reiniciar\n\n")
+
+	sb.WriteString("choose --default iso_0 --timeout 15000 selected || goto reboot\n")
+	sb.WriteString("goto ${selected}\n\n")
 
 	for i, iso := range isoList {
 		sb.WriteString(fmt.Sprintf(":iso_%d\n", i))
