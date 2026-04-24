@@ -1,5 +1,5 @@
 @echo off
-title 4MCSERVER v2.0.3 - Ultra PXE Engine
+title 4MCSERVER v2.0.4 - Ultra PXE Engine
 setlocal enabledelayedexpansion
 
 :: ----- Elevacao de Privilegios ----
@@ -12,6 +12,8 @@ if !errorLevel! neq 0 (
 
 :: Garantir que o diretorio de trabalho e a pasta do script
 cd /d "%~dp0"
+:: Limpar atributos de arquivos extraidos para garantir visibilidade no servidor HTTP
+attrib -R -H -S "data\*" /S /D >nul 2>&1
 cls
 
 echo.

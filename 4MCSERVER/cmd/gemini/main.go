@@ -104,7 +104,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 func main() {
 	log.SetOutput(logCatcher)
 	log.Println(" ================================================================")
-	log.Println("   4MCSERVER v2.0.3  |  Ultra PXE Engine  |  Powered by Go")
+	log.Println("   4MCSERVER v2.0.4  |  Ultra PXE Engine  |  Powered by Go")
 	log.Println(" ================================================================")
 
 	os.MkdirAll(isoFolder, 0755)
