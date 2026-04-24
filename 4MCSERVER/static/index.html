@@ -126,6 +126,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column}
     <nav>
         <a class="active" onclick="showPage('dash')">🏠 Dashboard</a>
         <a onclick="showPage('isos')">💿 ISO Library</a>
+        <a onclick="showPage('analytics')">📊 Analytics</a>
         <a onclick="showPage('network')">🔌 Network</a>
         <a onclick="showPage('logs')">📟 Logs</a>
     </nav>
@@ -207,6 +208,23 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column}
         </div>
     </div>
 
+    <!-- ── ANALYTICS ── -->
+    <div class="page" id="page-analytics">
+        <div class="ph"><div><h1>KPI Dashboard</h1><p>Métricas e estatísticas do servidor</p></div></div>
+        <div class="cards" style="grid-template-columns: 1fr 1fr">
+            <div class="card">
+                <div class="card-label">Boot Requests</div>
+                <div class="card-val" style="color:var(--green)">+ Em breve</div>
+                <div class="card-status">Total de máquinas inicializadas via PXE</div>
+            </div>
+            <div class="card">
+                <div class="card-label">TFTP Transfers</div>
+                <div class="card-val" style="color:var(--blue)">+ Em breve</div>
+                <div class="card-status">Arquivos entregues com sucesso</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── LOGS ── -->
     <div class="page" id="page-logs">
         <div class="ph"><div><h1>Logs Completos</h1><p>Histórico de eventos do servidor</p></div>
@@ -240,7 +258,14 @@ function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
-    event.currentTarget.classList.add('active');
+    
+    const links = document.querySelectorAll('aside nav a');
+    if (id === 'dash') links[0].classList.add('active');
+    if (id === 'isos') links[1].classList.add('active');
+    if (id === 'analytics') links[2].classList.add('active');
+    if (id === 'network') links[3].classList.add('active');
+    if (id === 'logs') links[4].classList.add('active');
+    
     if (id === 'isos') refreshISOs();
     if (id === 'network') refreshInterfaces();
 }
@@ -327,6 +352,12 @@ async function refreshISOs() {
     } catch(e){}
 }
 
+function renderISOs(isos) {
+    const tbody = document.getElementById('iso-tbody');
+    if (!isos || isos.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="iso-empty">Nenhuma ISO adicionada. Use o campo acima ou clique em "Scan pasta iso/".</td></tr>';
+        return;
+    }
     tbody.innerHTML = isos.map(iso => {
         const typeClass = {WinPE:'badge-winpe',Linux:'badge-linux',Utility:'badge-util'}[iso.iso_type] || 'badge-generic';
         

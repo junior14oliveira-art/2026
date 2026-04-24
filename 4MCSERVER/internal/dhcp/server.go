@@ -57,7 +57,7 @@ func (s *Server) serve() {
 	nextIP := byte(100)
 	
 	for s.Running {
-		n, _, err := s.conn.ReadFromUDP(buf)
+		n, addr, err := s.conn.ReadFromUDP(buf)
 		if err != nil {
 			if s.Running {
 				log.Printf("[DHCP] Erro na leitura: %v", err)
@@ -66,6 +66,16 @@ func (s *Server) serve() {
 		}
 
 		if n < 240 { continue } // Pacote inválido
+		
+		// Copia o buffer para a goroutine
+		packetData := make([]byte, n)
+		copy(packetData, buf[:n])
+		
+		go s.handlePacket(packetData, n, addr, &nextIP)
+	}
+}
+
+func (s *Server) handlePacket(buf []byte, n int, addr *net.UDPAddr, nextIP *byte) {
 
 		op := buf[0]
 		xid := buf[4:8]
@@ -127,6 +137,9 @@ func (s *Server) serve() {
 		res.SetYIAddr(clientIP)  // IP oferecido ao cliente
 		res.SetSIAddr(serverIP)  // IP do servidor TFTP
 		
+		// Flag crucial para redes físicas: Força Broadcast flag
+		res.SetFlags(0x8000) 
+		
 		// ─────────────────────────────────────────────
 		// Heurística Anti-Looping (Chainload Loop Breaker)
 		// ─────────────────────────────────────────────
@@ -182,6 +195,8 @@ func (s *Server) serve() {
 			res = res.AddOption(66, []byte(serverIP.String()))  // TFTP Server
 			res = res.AddOption(67, []byte(bootPath))           // Bootfile
 			res = res.AddOption(43, []byte{6, 1, 8, 10, 4, 0, 'P', 'X', 'E', 255}) // PXE Magic
+			// Adiciona opção 97 (UUID) se existir para contornar problemas Dell
+			// res = res.AddOption(97, ...) 
 		} else {
 			res = res.AddOption(67, []byte(bootPath))
 		}
@@ -205,12 +220,12 @@ func (s *Server) serve() {
 			}
 		}
 
-		// Envia Resposta p/ Broadcast Específico e Geral
+		// Envia Resposta p/ Broadcast Específico e Geral (Aumenta compatibilidade em Switch Físico)
 		s.conn.WriteToUDP(res, &net.UDPAddr{IP: bcast, Port: 68})
 		s.conn.WriteToUDP(res, &net.UDPAddr{IP: net.IPv4bcast, Port: 68})
+		s.conn.WriteToUDP(res, &net.UDPAddr{IP: clientIP, Port: 68}) // Unicast direto se a rede permitir
 		
-		log.Printf("[DHCP] %s enviado para %v", map[byte]string{2:"OFFER", 5:"ACK"}[respType], clientIP)
-	}
+		log.Printf("[DHCP] %s enviado para %v (Concurrency OK)", map[byte]string{2:"OFFER", 5:"ACK"}[respType], clientIP)
 }
 
 func (s *Server) getLocalIP() net.IP {
