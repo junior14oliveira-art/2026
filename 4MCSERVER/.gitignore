@@ -1,0 +1,19 @@
+# Binarios
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go
+go.sum
+
+# Logs
+logs/
+*.log
+PXE_GEMINI_HTTPDISK_CRASH.txt
+
+# OS
+.DS_Store
+Thumbs.db

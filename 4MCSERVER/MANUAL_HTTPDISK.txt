@@ -1,0 +1,42 @@
+=========================================================
+  MANUAL DE BOOT HTTPDISK NO GEMINIFLASH
+=========================================================
+O GEMINIFLASH suporta "sanboot" nativo e ultrarrápido para
+arquivos ISO verdadeiros. No entanto, o Windows PE (como 
+o Strelec) muitas vezes sofre tela azul (INACCESSIBLE_BOOT_DEVICE)
+no meio do carregamento, pois o kernel do Windows "perde" a 
+conexão virtual da ISO criada pelo iPXE.
+
+Para contornar isso, usamos a técnica "WIMBoot + HTTPDisk".
+
+=== COMO FUNCIONA O HTTPDISK? ===
+Em vez de bootar a ISO inteira pelo iPXE, nós fatiamos o boot:
+1. O iPXE baixa o "wimboot".
+2. O wimboot serve como um elo para inicializar apenas o "boot.wim" (O mini-Windows PE).
+3. Nós injetamos o driver 'httpdisk.sys' diretamente na memória usando o INITRD do wimboot.
+4. Quando o Windows PE inicia, ele já tem o driver na pasta System32!
+5. Um script (startnet.cmd) é acionado imediatamente para rodar o comando:
+   httpdisk.exe /mount 1 http://IP_DO_SERVIDOR:8080/iso/STRELEC.iso /cd Y:
+6. O disco Y: virtual aparece no Windows PE, e ele executa o ambiente Strelec completo de lá!
+
+=== COMO CONFIGURAR ISSO NO GEMINIFLASH V1.2+ ===
+1. Você não precisa usar mais scripts Python. O GEMINIFLASH é um webserver completo!
+2. Extraia o conteúdo essencial da SUA ISO usando o 7-Zip para uma pasta `iso/StrelecExtracted/` ou similar.
+3. No arquivo `main.go`, na função `handleMenu`, adicione a lógica manual do WIMBoot:
+
+  // Exemplo de Menu iPXE injetando o script
+  sb.WriteString(":strelec_httpdisk\n")
+  sb.WriteString("kernel http://${next-server}:8080/boot/wimboot gui rawbcd\n")
+  sb.WriteString("initrd http://${next-server}:8080/StrelecExtracted/bootmgr bootmgr\n")
+  sb.WriteString("initrd http://${next-server}:8080/StrelecExtracted/boot/bcd boot/bcd\n")
+  sb.WriteString("initrd http://${next-server}:8080/StrelecExtracted/boot/boot.sdi boot/boot.sdi\n")
+  sb.WriteString("initrd http://${next-server}:8080/StrelecExtracted/SSTR/system/SSTR10X64.WIM SSTR/system/SSTR10X64.WIM\n")
+  sb.WriteString("initrd http://${next-server}:8080/boot/httpdisk.sys Windows/System32/drivers/httpdisk.sys\n")
+  sb.WriteString("initrd http://${next-server}:8080/boot/httpdisk.exe Windows/System32/httpdisk.exe\n")
+  sb.WriteString("initrd http://${next-server}:8080/boot/startnet.cmd Windows/System32/startnet.cmd\n")
+  sb.WriteString("boot\n")
+
+=========================================================
+POR HORA: Tente o modo SANBOOT com a ISO Correta!
+Nós resolvemos o erro do "RAR", a verdadeira ISO está na pasta.
+Tente dar o Boot normalmente antes de partir para a solução complexa!

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  geminiflash:
+    build: .
+    container_name: geminiflash_srv
+    network_mode: host # ESSENCIAL para DHCP/PXE Broadcast
+    restart: always
+    volumes:
+      - ./iso:/root/iso # Pasta para colocar suas ISOs
+      - ./data:/root/data # Persistencia de logs e configs
+    environment:
+      - SERVER_IP=0.0.0.0
+      - MODE_PROXY=true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"
