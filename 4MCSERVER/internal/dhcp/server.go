@@ -82,7 +82,7 @@ func (s *Server) handlePacket(buf []byte, n int, addr *net.UDPAddr, nextIP *byte
 		chaddr := buf[28:34]
 
 		// Só respondemos a solicitações de BOOT (op 1)
-		if op != 1 { continue }
+		if op != 1 { return }
 
 		// Descobrir OPÇÕES do Cliente
 		var msgType byte = 1
@@ -126,19 +126,16 @@ func (s *Server) handlePacket(buf []byte, n int, addr *net.UDPAddr, nextIP *byte
 		if serverIPv4 == nil { serverIPv4 = net.IPv4(192, 168, 0, 1).To4() }
 		
 		// Gera IP para o cliente garantindo que usamos os octetos corretos
-		clientIP := net.IPv4(serverIPv4[0], serverIPv4[1], serverIPv4[2], nextIP)
+		clientIP := net.IPv4(serverIPv4[0], serverIPv4[1], serverIPv4[2], *nextIP)
 		if requestedIP != nil && requestedIP.To4() != nil {
 			clientIP = requestedIP.To4()
 		}
-		nextIP++
-		if nextIP > 200 { nextIP = 100 }
+		(*nextIP)++
+		if *nextIP > 200 { *nextIP = 100 }
 		
 		// Define IPs no pacote
 		res.SetYIAddr(clientIP)  // IP oferecido ao cliente
 		res.SetSIAddr(serverIP)  // IP do servidor TFTP
-		
-		// Flag crucial para redes físicas: Força Broadcast flag
-		res.SetFlags(0x8000) 
 		
 		// ─────────────────────────────────────────────
 		// Heurística Anti-Looping (Chainload Loop Breaker)
