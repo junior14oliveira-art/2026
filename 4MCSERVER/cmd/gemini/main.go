@@ -21,7 +21,7 @@ import (
 )
 
 // ─────────────────────────────────────────────
-// Tipos
+// Tipos e Estruturas de Dados
 // ─────────────────────────────────────────────
 
 type ISOEntry struct {
@@ -41,7 +41,7 @@ type GlobalState struct {
 }
 
 // ─────────────────────────────────────────────
-// Estado Global
+// Estado Global e Mutexes
 // ─────────────────────────────────────────────
 
 var (
@@ -56,7 +56,7 @@ var (
 const isoFolder = "./iso"
 
 // ─────────────────────────────────────────────
-// Captura de Logs
+// Captura de Logs para o Painel Web
 // ─────────────────────────────────────────────
 
 type LogCapture struct {
@@ -69,7 +69,7 @@ func (l *LogCapture) Write(p []byte) (n int, err error) {
 	os.Stdout.WriteString(msg)
 	l.mu.Lock()
 	l.logs = append(l.logs, strings.TrimRight(msg, "\n"))
-	if len(l.logs) > 100 {
+	if len(l.logs) > 150 {
 		l.logs = l.logs[1:]
 	}
 	l.mu.Unlock()
@@ -79,7 +79,7 @@ func (l *LogCapture) Write(p []byte) (n int, err error) {
 var logCatcher = &LogCapture{}
 
 // ─────────────────────────────────────────────
-// Main
+// Middlewares e Wrappers HTTP
 // ─────────────────────────────────────────────
 
 type responseWriter struct {
@@ -89,69 +89,87 @@ type responseWriter struct {
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
-	if rw.wroteHeader { return }
+	if rw.wroteHeader {
+		return
+	}
 	rw.status = code
 	rw.wroteHeader = true
 	rw.ResponseWriter.WriteHeader(code)
 }
 
+// ─────────────────────────────────────────────
+// Ponto de Entrada (Main)
+// ─────────────────────────────────────────────
+
 func main() {
 	log.SetOutput(logCatcher)
-	log.Println("[INFO] 4MCSERVER v2.0 (High Performance PXE) iniciando...")
+	log.Println(" ================================================================")
+	log.Println("   4MCSERVER v2.0.2  |  Ultra PXE Engine  |  Powered by Go")
+	log.Println(" ================================================================")
+
 	os.MkdirAll(isoFolder, 0755)
 	os.MkdirAll("./data/extracted", 0755)
 
-	// Scan imediato da pasta iso/ ao iniciar
+	// Scan inicial da biblioteca
 	count := scanISOFolder()
-	if count > 0 {
-		log.Printf("[ISO] %d ISO(s) carregada(s) da pasta iso/ na inicialização", count)
-	}
+	log.Printf("[SISTEMA] %d ISO(s) detectada(s) na inicialização", count)
 
 	go watchISOs()
 
 	mux := http.NewServeMux()
 
-	// API endpoints
-	mux.HandleFunc("/api/status",       handleStatus)
-	mux.HandleFunc("/api/logs",         handleLogs)
-	mux.HandleFunc("/api/start",        handleStart)
-	mux.HandleFunc("/api/stop",         handleStop)
-	mux.HandleFunc("/api/isos",         handleISOs)
-	mux.HandleFunc("/api/isos/scan",    handleISOScan)
-	mux.HandleFunc("/api/isos/add",     handleISOAdd)
-	mux.HandleFunc("/api/isos/remove",  handleISORemove)
-	mux.HandleFunc("/api/isos/browse",  handleISOBrowse)
+	// Registro de Handlers de API
+	mux.HandleFunc("/api/status", handleStatus)
+	mux.HandleFunc("/api/logs", handleLogs)
+	mux.HandleFunc("/api/start", handleStart)
+	mux.HandleFunc("/api/stop", handleStop)
+	mux.HandleFunc("/api/isos", handleISOs)
+	mux.HandleFunc("/api/isos/scan", handleISOScan)
+	mux.HandleFunc("/api/isos/add", handleISOAdd)
+	mux.HandleFunc("/api/isos/remove", handleISORemove)
+	mux.HandleFunc("/api/isos/browse", handleISOBrowse)
+	mux.HandleFunc("/api/isos/prepare", handleISOPrepare)
 	mux.HandleFunc("/api/network/interfaces", handleNetInterfaces)
-	mux.HandleFunc("/api/network/select",     handleNetSelect)
-	mux.HandleFunc("/api/isos/prepare",    handleISOPrepare)
-	mux.HandleFunc("/menu.ipxe",              handleMenu)
+	mux.HandleFunc("/api/network/select", handleNetSelect)
+	mux.HandleFunc("/menu.ipxe", handleMenu)
 
-	// Virtual mapping
+	// Servidores de Arquivos Estáticos e Virtuais
 	mux.Handle("/virtual/", http.StripPrefix("/virtual/", http.FileServer(http.Dir("./data/extracted"))))
 	mux.Handle("/iso/", http.StripPrefix("/iso/", http.FileServer(http.Dir("./iso"))))
 	mux.Handle("/boot/", http.StripPrefix("/boot/", http.FileServer(http.Dir("./boot"))))
 	mux.Handle("/", http.FileServer(http.Dir("./static")))
 
-	// Middleware de Log
+	// Middleware de Log Detalhado
 	wrappedMux := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rw := &responseWriter{ResponseWriter: w, status: 200}
 		mux.ServeHTTP(rw, r)
-		log.Printf("[HTTP] %s %s -> %d", r.Method, r.URL.Path, rw.status)
+		if r.URL.Path != "/api/logs" && r.URL.Path != "/api/status" {
+			log.Printf("[HTTP] %s %s -> %d", r.Method, r.URL.Path, rw.status)
+		}
 	})
 
-	log.Println("[INFO] Painel 4MCSERVER disponível em http://localhost:8080")
+	log.Println("[INFO] Dashboard 4MCSERVER disponível em http://localhost:8080")
+	
 	go func() {
 		if err := http.ListenAndServe(":8080", wrappedMux); err != nil {
-			log.Fatalf("[ERRO] Servidor web: %v", err)
+			log.Fatalf("[FATAL] Erro no servidor web: %v", err)
 		}
 	}()
 
+	// Graceful Shutdown
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	<-sigs
-	log.Println("[INFO] Encerrando...")
-	if dhcpServer != nil { dhcpServer.Stop() }
+	log.Println("[INFO] Encerrando serviços do 4MCSERVER...")
+	if dhcpServer != nil {
+		dhcpServer.Stop()
+	}
+	log.Println("[INFO] Bye!")
 }
+
+// ─────────────────────────────────────────────
+// Implementação dos Handlers
+// ─────────────────────────────────────────────
 
 func handleStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -173,27 +191,122 @@ func handleStart(w http.ResponseWriter, r *http.Request) {
 	defer mu.Unlock()
 	if !state.Running {
 		listenIP := state.SelectedIP
-		if listenIP == "" { listenIP = "0.0.0.0" }
+		if listenIP == "" {
+			listenIP = "0.0.0.0"
+		}
 
-		srv := dhcp.NewServer(listenIP)
-		if err := srv.Listen(); err != nil {
-			log.Printf("[ERRO] DHCP em %s: %v", listenIP, err)
+		// Motor DHCP
+		dhcpSrv := dhcp.NewServer(listenIP)
+		if err := dhcpSrv.Listen(); err != nil {
+			log.Printf("[ERRO] Falha DHCP: %v", err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		dhcpServer = srv
+		dhcpServer = dhcpSrv
 
+		// Motor TFTP
 		bootDir := "./boot"
 		os.MkdirAll(bootDir, 0755)
-		tftpServer = tftp.NewServer(listenIP, bootDir)
-		if err := tftpServer.Listen(); err != nil {
-			log.Printf("[ERRO] TFTP: %v", err)
+		tftpSrv := tftp.NewServer(listenIP, bootDir)
+		if err := tftpSrv.Listen(); err != nil {
+			log.Printf("[ERRO] Falha TFTP: %v", err)
 		}
+		tftpServer = tftpSrv
 
 		state.Running = true
-		log.Printf("[INFO] Motor DHCP iniciado — Interface: %s porta 67", listenIP)
+		log.Printf("[SERVIÇOS] Servidores ATIVOS na interface %s", listenIP)
 	}
 	json.NewEncoder(w).Encode(map[string]string{"status": "started"})
+}
+
+func handleStop(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	mu.Lock()
+	defer mu.Unlock()
+	if state.Running {
+		if dhcpServer != nil {
+			dhcpServer.Stop()
+			dhcpServer = nil
+		}
+		if tftpServer != nil {
+			tftpServer.Stop()
+			tftpServer = nil
+		}
+		state.Running = false
+		log.Println("[SERVIÇOS] Servidores parados com sucesso")
+	}
+	json.NewEncoder(w).Encode(map[string]string{"status": "stopped"})
+}
+
+func handleISOs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	isoMu.Lock()
+	defer isoMu.Unlock()
+	json.NewEncoder(w).Encode(isoList)
+}
+
+func handleISOScan(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	count := scanISOFolder()
+	json.NewEncoder(w).Encode(map[string]interface{}{"found": count})
+}
+
+func handleISOAdd(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var body struct{ Path string `json:"path"` }
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Path == "" {
+		http.Error(w, "JSON inválido", 400)
+		return
+	}
+	entry, err := addISO(body.Path)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+	json.NewEncoder(w).Encode(entry)
+}
+
+func handleISORemove(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	name := r.URL.Query().Get("name")
+	isoMu.Lock()
+	defer isoMu.Unlock()
+	newList := []ISOEntry{}
+	for _, iso := range isoList {
+		if iso.Name != name {
+			newList = append(newList, iso)
+		}
+	}
+	isoList = newList
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+}
+
+func handleISOBrowse(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	found := []map[string]string{}
+	// Escaneia drives de C: a Z:
+	for _, letter := range "CDEFGHIJKLMNOPQRSTUVWXYZ" {
+		root := string(letter) + `:\`
+		if _, err := os.Stat(root); err == nil {
+			filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+				if err != nil { return nil }
+				if !info.IsDir() && strings.HasSuffix(strings.ToLower(path), ".iso") {
+					found = append(found, map[string]string{
+						"name": info.Name(),
+						"path": path,
+						"size_mb": fmt.Sprintf("%.1f MB", float64(info.Size())/1024/1024),
+						"iso_type": detectISOType(info.Name()),
+					})
+				}
+				// Limitar profundidade para não demorar
+				if info.IsDir() && strings.Count(path, string(os.PathSeparator)) > 2 {
+					return filepath.SkipDir
+				}
+				return nil
+			})
+		}
+	}
+	json.NewEncoder(w).Encode(found)
 }
 
 func handleNetInterfaces(w http.ResponseWriter, r *http.Request) {
@@ -224,225 +337,272 @@ func handleNetInterfaces(w http.ResponseWriter, r *http.Request) {
 func handleNetSelect(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	ip := r.URL.Query().Get("ip")
-	if ip == "" { http.Error(w, "IP requerido", 400); return }
+	if ip == "" {
+		http.Error(w, "IP é obrigatório", 400)
+		return
+	}
 	mu.Lock()
 	state.SelectedIP = ip
 	mu.Unlock()
-	log.Printf("[NET] Interface selecionada: %s", ip)
+	log.Printf("[NET] Interface de saída definida para %s", ip)
 	json.NewEncoder(w).Encode(map[string]bool{"success": true})
 }
 
-func handleStop(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	mu.Lock()
-	defer mu.Unlock()
-	if state.Running {
-		if dhcpServer != nil { dhcpServer.Stop(); dhcpServer = nil }
-		if tftpServer != nil { tftpServer.Stop(); tftpServer = nil }
-		state.Running = false
-		log.Println("[INFO] Servidores parados")
-	}
-	json.NewEncoder(w).Encode(map[string]string{"status": "stopped"})
-}
-
-func handleISOs(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	isoMu.Lock()
-	defer isoMu.Unlock()
-	json.NewEncoder(w).Encode(isoList)
-}
-
-func handleISOScan(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	count := scanISOFolder()
-	json.NewEncoder(w).Encode(map[string]interface{}{"found": count})
-}
-
-func handleISOAdd(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var body struct { Path string `json:"path"` }
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Path == "" {
-		http.Error(w, "body inválido", 400); return
-	}
-	entry, err := addISO(body.Path)
-	if err != nil { http.Error(w, err.Error(), 400); return }
-	json.NewEncoder(w).Encode(entry)
-}
-
-func handleISORemove(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	name := r.URL.Query().Get("name")
-	isoMu.Lock()
-	defer isoMu.Unlock()
-	newList := []ISOEntry{}
-	for _, iso := range isoList {
-		if iso.Name != name { newList = append(newList, iso) }
-	}
-	isoList = newList
-	json.NewEncoder(w).Encode(map[string]bool{"removed": true})
-}
+// ─────────────────────────────────────────────
+// Lógica de Preparação de ISOs (Extração e Hooks)
+// ─────────────────────────────────────────────
 
 func handleISOPrepare(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	isoMu.Lock()
 	var targetISO *ISOEntry
 	for i := range isoList {
-		if isoList[i].Name == name { targetISO = &isoList[i]; break }
+		if isoList[i].Name == name {
+			targetISO = &isoList[i]
+			break
+		}
 	}
 	isoMu.Unlock()
-	if targetISO == nil { http.Error(w, "ISO não encontrada", 404); return }
+
+	if targetISO == nil {
+		http.Error(w, "ISO não encontrada", 404)
+		return
+	}
 
 	go func() {
-		mu.Lock(); ip := state.SelectedIP; mu.Unlock()
+		mu.Lock()
+		ip := state.SelectedIP
+		mu.Unlock()
 		if ip == "" { ip = "127.0.0.1" }
+
 		targetISO.Status = "extracting"
+		log.Printf("[ISO] Preparando ambiente para %s...", name)
+
 		if err := prepareISO(targetISO); err != nil {
-			log.Printf("[ERRO] Extração: %v", err)
-			targetISO.Status = "error"; return
+			log.Printf("[ERRO] Falha na extração de %s: %v", name, err)
+			targetISO.Status = "error"
+			return
 		}
+
 		if err := generateHooks(targetISO, ip); err != nil {
-			log.Printf("[ERRO] Hooks: %v", err)
-			targetISO.Status = "error"; return
+			log.Printf("[ERRO] Falha nos hooks de %s: %v", name, err)
+			targetISO.Status = "error"
+			return
 		}
+
 		targetISO.Status = "ready"
+		log.Printf("[ISO] %s está PRONTA para boot iPXE", name)
 	}()
-	w.WriteHeader(202)
+
+	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(map[string]string{"status": "started"})
 }
 
 func prepareISO(iso *ISOEntry) error {
 	targetDir := filepath.Join("./data/extracted", iso.Key)
 	os.MkdirAll(targetDir, 0755)
+
 	absIso, _ := filepath.Abs(iso.Path)
 	absTarget, _ := filepath.Abs(targetDir)
 
 	psCmd := fmt.Sprintf(`
 		$ErrorActionPreference = 'Stop';
-		Mount-DiskImage -ImagePath '%s';
+		log-message "Iniciando Mount-DiskImage para %s"
+		Mount-DiskImage -ImagePath '%s' -StorageType ISO;
 		$vi = Get-DiskImage -ImagePath '%s' | Get-Volume;
 		if ($vi) {
 			$d = $vi.DriveLetter + ':';
-			$targets = @{ 'bootmgr'='bootmgr'; 'boot.sdi'='boot.sdi'; 'BCD'='BCD'; 'boot.wim'='boot.wim'; 'bootx64.efi'='bootx64.efi'; 'bootmgfw.efi'='bootmgfw.efi' }
+			log-message "ISO montada em $d. Iniciando copia seletiva..."
+			$targets = @{
+				'bootmgr' = 'bootmgr';
+				'boot.sdi' = 'boot.sdi';
+				'BCD' = 'BCD';
+				'boot.wim' = 'boot.wim';
+				'bootx64.efi' = 'bootx64.efi';
+				'bootmgfw.efi' = 'bootmgfw.efi'
+			}
 			foreach ($t in $targets.Keys) {
 				$f = Get-ChildItem -Path $d -Filter $targets[$t] -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1;
-				if ($f) { cp $f.FullName (Join-Path '%s' $t) -Force }
+				if ($f) {
+					$dest = Join-Path '%s' $t;
+					Copy-Item $f.FullName $dest -Force;
+				}
 			}
+			# Fallback para boot.wim se nao encontrar pelo nome exato
 			if (-not (Test-Path (Join-Path '%s' 'boot.wim'))) {
 				$maxWim = Get-ChildItem -Path $d -Filter *.wim -Recurse | Sort-Object Length -Descending | Select-Object -First 1;
-				if ($maxWim) { cp $maxWim.FullName (Join-Path '%s' 'boot.wim') -Force }
+				if ($maxWim) { Copy-Item $maxWim.FullName (Join-Path '%s' 'boot.wim') -Force }
 			}
 			Dismount-DiskImage -ImagePath '%s';
-			# Limpar atributos (Hidden, ReadOnly)
-			Get-ChildItem -Path '%s' -Recurse | ForEach-Object { $_.Attributes = 'Archive' }
-		} else { throw "Volume não encontrado" }
-	`, absIso, absIso, absTarget, absTarget, absTarget, absIso, absTarget)
+			# LIMPEZA DE ATRIBUTOS (Crucial para evitar 404 no Servidor HTTP)
+			log-message "Limpando atributos de Hidden/System/ReadOnly em %s"
+			Get-ChildItem -Path '%s' -Recurse | ForEach-Object {
+				$_.Attributes = 'Archive'
+			}
+		} else {
+			throw "Nao foi possivel localizar o Volume da ISO montada."
+		}
+		function log-message($m) { Write-Host "[PS] $m" }
+	`, absIso, absIso, absIso, absTarget, absTarget, absTarget, absIso, absTarget, absTarget)
 
-	out, err := exec.Command("powershell", "-Command", psCmd).CombinedOutput()
-	if err != nil { return fmt.Errorf("PS: %v - Out: %s", err, out) }
+	cmd := exec.Command("powershell", "-Command", psCmd)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("PowerShell: %v | Output: %s", err, string(out))
+	}
 	return nil
 }
 
 func generateHooks(iso *ISOEntry, serverIP string) error {
 	targetDir := filepath.Join("./data/extracted", iso.Key)
+	
+	// hook.cmd: O cérebro da montagem remota via HTTPDisk
 	hookContent := fmt.Sprintf(`@echo off
 color 0b
-echo 4MCSERVER Hook for %s
+echo ====================================================
+echo   4MCSERVER - Hook Engine V2.0
+echo   ISO: %s ^| Servidor: %s
+echo ====================================================
 wpeinit
+echo [1/3] Aguardando rede...
 ping -n 5 %s >nul
+echo [2/3] Instalando driver HTTPDisk...
 sc create HttpDisk binpath= "X:\Windows\System32\drivers\httpdisk.sys" type= kernel start= demand 2>nul
 sc start HttpDisk
+echo [3/3] Montando ISO via HTTP...
 X:\Windows\System32\httpdisk.exe /mount 0 http://%s:8080/iso/%s /size 0 Y:
 if exist Y:\ (
-    echo SUCESSO!
-    if exist Y:\SSTR\MInst\MInst.exe ( pecmd.exe MAIN %%SystemRoot%%\System32\pecmd.ini )
-    else if exist Y:\setup.exe ( Y:\setup.exe )
-    else ( start explorer.exe Y:\ )
-) else ( echo ERRO!; pause; cmd.exe )
-`, iso.Name, serverIP, serverIP, iso.Name)
+    echo [SUCESSO] ISO montada em Y:\
+    if exist Y:\SSTR\MInst\MInst.exe (
+        echo [INFO] Detectado Sergei Strelec. Iniciando PECMD...
+        pecmd.exe MAIN %%SystemRoot%%\System32\pecmd.ini
+    ) else if exist Y:\setup.exe (
+        echo [INFO] Detectado Instalador Windows.
+        Y:\setup.exe
+    ) else (
+        echo [INFO] ISO Generica. Abrindo Explorer...
+        start explorer.exe Y:\
+    )
+) else (
+    echo [ERRO] Falha critica ao montar ISO remota!
+    pause
+    cmd.exe
+)
+`, iso.Name, serverIP, serverIP, serverIP, iso.Name)
+
 	os.WriteFile(filepath.Join(targetDir, "hook.cmd"), []byte(hookContent), 0644)
 	os.WriteFile(filepath.Join(targetDir, "startnet.cmd"), []byte("@echo off\nX:\\Windows\\System32\\hook.cmd\n"), 0644)
 	os.WriteFile(filepath.Join(targetDir, "winpeshl.ini"), []byte("[LaunchApps]\nX:\\Windows\\System32\\hook.cmd\n"), 0644)
+	
 	if strings.Contains(strings.ToLower(iso.Name), "strelec") {
-		os.WriteFile(filepath.Join(targetDir, "pecmd.ini"), []byte("EXEC =!CMD.EXE /C \"X:\\Windows\\System32\\hook.cmd\"\nIF EX Y:\\SSTR\\pecmd.ini,LOAD Y:\\SSTR\\pecmd.ini\n"), 0644)
+		pecmdContent := `EXEC =!CMD.EXE /C "X:\Windows\System32\hook.cmd"
+IF EX Y:\SSTR\pecmd.ini,LOAD Y:\SSTR\pecmd.ini
+`
+		os.WriteFile(filepath.Join(targetDir, "pecmd.ini"), []byte(pecmdContent), 0644)
 	}
 	return nil
 }
 
 func handleMenu(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
-	isoMu.Lock(); defer isoMu.Unlock()
+	isoMu.Lock()
+	defer isoMu.Unlock()
+
 	var sb strings.Builder
-	sb.WriteString("#!ipxe\nmenu 4MCSERVER - PXE Menu\n")
-	for i, iso := range isoList { sb.WriteString(fmt.Sprintf("item iso_%d %s\n", i, iso.Name)) }
+	sb.WriteString("#!ipxe\n\n")
+	sb.WriteString("set menu-timeout 8000\n")
+	sb.WriteString("menu 4MCSERVER PXE Engine v2.0\n")
+	sb.WriteString("item --gap --             --- BIBLIOTECA DE ISOS ---\n")
+
+	for i, iso := range isoList {
+		sb.WriteString(fmt.Sprintf("item iso_%d %s [%s]\n", i, iso.Name, iso.SizeMB))
+	}
+	
+	sb.WriteString("item --gap --             --- UTILITARIOS ---\n")
+	sb.WriteString("item shell                iPXE Shell\n")
+	sb.WriteString("item reboot               Reiniciar\n\n")
+
 	for i, iso := range isoList {
 		sb.WriteString(fmt.Sprintf(":iso_%d\n", i))
 		if iso.Status == "ready" {
 			base := fmt.Sprintf("http://${next-server}:8080")
 			sb.WriteString(fmt.Sprintf("kernel %s/boot/wimboot gui rawbcd\n", base))
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/bootmgr bootmgr\n", base, iso.Key))
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/BCD BCD\n", base, iso.Key))
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.sdi boot.sdi\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/bootmgr      bootmgr\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/BCD          BCD\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.sdi      boot.sdi\n", base, iso.Key))
+			
 			if strings.Contains(strings.ToLower(iso.Name), "strelec") {
-				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.wim SSTR/system/SSTR10X64.WIM\n", base, iso.Key))
-				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/pecmd.ini Windows/System32/pecmd.ini\n", base, iso.Key))
+				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.wim   SSTR/system/SSTR10X64.WIM\n", base, iso.Key))
+				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/pecmd.ini  Windows/System32/pecmd.ini\n", base, iso.Key))
 			} else {
-				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.wim sources/boot.wim\n", base, iso.Key))
+				sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/boot.wim   sources/boot.wim\n", base, iso.Key))
 			}
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/hook.cmd Windows/System32/hook.cmd\n", base, iso.Key))
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/startnet.cmd Windows/System32/startnet.cmd\n", base, iso.Key))
-			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/winpeshl.ini Windows/System32/winpeshl.ini\n", base, iso.Key))
-			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.sys Windows/System32/drivers/httpdisk.sys\n", base))
-			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.exe Windows/System32/httpdisk.exe\n", base))
-			sb.WriteString("boot\n")
-		} else { sb.WriteString(fmt.Sprintf("sanboot http://${next-server}:8080/iso/%s\n", iso.Name)) }
+			
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/hook.cmd      Windows/System32/hook.cmd\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/startnet.cmd  Windows/System32/startnet.cmd\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/virtual/%s/winpeshl.ini  Windows/System32/winpeshl.ini\n", base, iso.Key))
+			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.sys      Windows/System32/drivers/httpdisk.sys\n", base))
+			sb.WriteString(fmt.Sprintf("initrd %s/boot/httpdisk.exe      Windows/System32/httpdisk.exe\n", base))
+			sb.WriteString("boot\n\n")
+		} else {
+			sb.WriteString(fmt.Sprintf("sanboot http://${next-server}:8080/iso/%s\n\n", iso.Name))
+		}
 	}
+
+	sb.WriteString(":shell\nshell\n\n")
+	sb.WriteString(":reboot\nreboot\n")
+
 	w.Write([]byte(sb.String()))
 }
+
+// ─────────────────────────────────────────────
+// Auxiliares
+// ─────────────────────────────────────────────
 
 func detectISOType(name string) string {
 	l := strings.ToLower(name)
 	if strings.Contains(l, "strelec") || strings.Contains(l, "win") { return "WinPE" }
-	if strings.Contains(l, "ubuntu") || strings.Contains(l, "linux") { return "Linux" }
-	return "Utility"
+	if strings.Contains(l, "ubuntu") || strings.Contains(l, "linux") || strings.Contains(l, "debian") { return "Linux" }
+	if strings.Contains(l, "clone") || strings.Contains(l, "parted") || strings.Contains(l, "kaspersky") { return "Utility" }
+	return "Generic"
 }
 
 func addISO(path string) (ISOEntry, error) {
-	info, _ := os.Stat(path)
+	info, err := os.Stat(path)
+	if err != nil { return ISOEntry{}, err }
 	name := filepath.Base(path)
-	isoMu.Lock(); defer isoMu.Unlock()
+	isoMu.Lock()
+	defer isoMu.Unlock()
 	entry := ISOEntry{
-		Name: name, Size: info.Size(), SizeMB: fmt.Sprintf("%.1f MB", float64(info.Size())/1024/1024),
-		Type: detectISOType(name), Path: path, Ready: true,
-		Key: strings.ToLower(regexp.MustCompile(`[^a-zA-Z0-9]`).ReplaceAllString(strings.Replace(name, ".iso", "", -1), "")),
+		Name:   name,
+		Size:   info.Size(),
+		SizeMB: fmt.Sprintf("%.1f MB", float64(info.Size())/1024/1024),
+		Type:   detectISOType(name),
+		Path:   path,
+		Ready:  true,
+		Key:    strings.ToLower(regexp.MustCompile(`[^a-zA-Z0-9]`).ReplaceAllString(strings.Replace(name, ".iso", "", -1), "")),
 		Status: "none",
 	}
-	if _, err := os.Stat(filepath.Join("./data/extracted", entry.Key, "boot.wim")); err == nil { entry.Status = "ready" }
+	// Auto-detectar se já está pronta (evita re-extração desnecessária)
+	if _, err := os.Stat(filepath.Join("./data/extracted", entry.Key, "boot.wim")); err == nil {
+		entry.Status = "ready"
+	}
 	isoList = append(isoList, entry)
 	return entry, nil
 }
 
 func scanISOFolder() int {
 	files, _ := filepath.Glob(filepath.Join(isoFolder, "*.[iI][sS][oO]"))
-	for _, f := range files { addISO(f) }
-	return len(files)
-}
-
-func handleISOBrowse(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	found := []map[string]string{}
-	for _, letter := range "CDEFGHIJKLMNOPQRSTUVWXYZ" {
-		root := string(letter) + `:\`
-		if _, err := os.Stat(root); err == nil {
-			filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-				if err == nil && !info.IsDir() && strings.HasSuffix(strings.ToLower(path), ".iso") {
-					found = append(found, map[string]string{"name": info.Name(), "path": path, "size_mb": fmt.Sprintf("%.1f MB", float64(info.Size())/1024/1024), "iso_type": detectISOType(info.Name())})
-				}
-				if info != nil && info.IsDir() && strings.Count(path, string(os.PathSeparator)) > 2 { return filepath.SkipDir }
-				return nil
-			})
-		}
+	count := 0
+	for _, f := range files {
+		if _, err := addISO(f); err == nil { count++ }
 	}
-	json.NewEncoder(w).Encode(found)
+	return count
 }
 
-func watchISOs() { for { time.Sleep(10 * time.Second); scanISOFolder() } }
+func watchISOs() {
+	for {
+		time.Sleep(15 * time.Second)
+		scanISOFolder()
+	}
+}
